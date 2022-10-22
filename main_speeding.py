@@ -3,6 +3,8 @@ import pygame as pg
 import math
 from collections import Counter
 
+from testing_rotations import rotate
+
 WIDTH, HEIGHT = 1900, 1000
 
 PLAYER_WIDTH, PLAYER_HEIGHT = WIDTH // 4, HEIGHT // 7
@@ -118,8 +120,7 @@ class Player(Car):
 
     def rotate_back(self) -> None:
         if self.rotation > 0:
-            self.rotation -= ROTATION_BACK_SPEED_ANGLE
-            self.image = pg.transform.rotate(PLAYER_IMAGE, self.rotation)
+            self.rotate_right()
         if self.rotation < 0:
             self.rotation += ROTATION_BACK_SPEED_ANGLE
             self.image = pg.transform.rotate(PLAYER_IMAGE, self.rotation)
