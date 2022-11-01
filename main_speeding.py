@@ -2,6 +2,9 @@
 import pygame as pg
 import math
 from collections import Counter
+import random
+
+from itertools import product
 
 from config import (
     WIN,
@@ -22,22 +25,44 @@ from config import (
     MAX_ANGLE,
     HIGHWAY_IMAGE,
     HIGHWAY_IMAGE_WIDTH,
-    tiles,
+    bg_tiles,
     SCROLL_SPEED,
     TRUCK_HEIGHT,
     TRUCK_WIDTH,
-    TRUCK_IMAGE
+    TRUCK_IMAGE,
+    LAMPS_IMAGE,
+    lamp_tiles,
+    LAMPS_WIDTH,
+    BRAKE_LIGHTS
 )
 
 pg.display.set_caption("Highway ride")
 
+
+class Game:
+    pass
+
+
 class Car:
+
+    speed = SPEED_PLAYER
+    max_speed = MAX_SPEED_PLAYER
+
     def __init__(self) -> None:
-        self._x = 600
-        self._y = 300
+        self._x: float = 600
+        self._y : float= 300
+        self.rotation = 0
         self.model
-        self.speed = SPEED_PLAYER
-        self.decelaration = FRICTION_DECEL
+        self.decelaration: int = FRICTION_DECEL
+
+
+    def constant_speed(self) -> None:
+        """Press and hold space to set constant speed"""
+        self.speed = SCROLL_SPEED
+
+    @classmethod
+    def slomo_test(cls):
+        cls.max_speed = MAX_SPEED_PLAYER // 2
 
     @property
     def x(self):
@@ -56,63 +81,67 @@ class Car:
         self._y = new_y
 
     def no_acceleration(self) -> None:
-        """Speed down if no acceleration"""
-        if self.speed > SPEED_PLAYER and self.x + self.speed < WIDTH:
-            if self.speed - self.decelaration >= SPEED_PLAYER:
-                self.speed -= self.decelaration
-                self.x += self.speed
-        else:
-            if self.x - self.decelaration > 0:
-                self.x -= self.decelaration * 6
+        if self.x - self.decelaration > 0:
+            self.x -= self.decelaration * 6
+
+    # or classmethod Truck
 
 class Truck(Car):
     def __init__(self) -> None:
-        # self._x = 900
-        # self._y = 400
         self.model = TRUCK_IMAGE
         super().__init__()
+
+
 
 class Player(Car):
     def __init__(self) -> None:
         self._x = WIDTH // 5
         self._y = HEIGHT // 2
-        self.rotation = 0
         self.model = PLAYER_IMAGE
         self.speed = SPEED_PLAYER
         self.decelaration = FRICTION_DECEL
+        self.brakes_light = False
+        self.brake_model = BRAKE_LIGHTS
+        super().__init__()
         # self.speed
 
+    def get_center_point(self):
+        return [self.x + PLAYER_WIDTH // 2, self.y + PLAYER_HEIGHT // 2]
 
 
-    def get_tan(self) -> float:
-        """Convert angle rotation of the player from the x axis to value of tangens of it"""
-        return math.tan(math.radians(abs(self.rotation)))
+    @staticmethod
+    def get_tan(angle) -> float:
+        """Get tangens value of given angle"""
+        return math.tan(math.radians(abs(angle)))
 
     def move_forward(self) -> None:
         """Move car forward depending on the car's rotation"""
         if self.x + self.speed < WIDTH - PLAYER_WIDTH:
             self.x += self.speed
-            if self.speed < MAX_SPEED_PLAYER:
+            if self.speed < self.max_speed:
                 self.speed += ACELERATION
             self.move_sideways()
 
     def move_sideways(self) -> None:
         """Move sideways if there is rotation != 0"""
-        if self.rotation > 0 and self.y - self.speed * self.get_tan() > DRIVING_AREA_SIZE[0]:
-            self.y -= (self.speed + SCROLL_SPEED) * self.get_tan()
-        if self.rotation < 0 and self.y + self.speed * self.get_tan() < DRIVING_AREA_SIZE[1]:
-            self.y += (self.speed + SCROLL_SPEED) * self.get_tan()
+        tan_angle = self.get_tan(self.rotation)
+        if self.rotation > 0 and self.y - self.speed * tan_angle > DRIVING_AREA_SIZE[0]:
+            self.y -= (self.speed + SCROLL_SPEED) * tan_angle
+        if self.rotation < 0 and self.y + self.speed * tan_angle < DRIVING_AREA_SIZE[1]:
+            self.y += (self.speed + SCROLL_SPEED) * tan_angle
 
     def no_acceleration(self) -> None:
         """Speed down if no acceleration"""
-        if self.speed > SPEED_PLAYER and self.x + self.speed < WIDTH:
+        if self.speed > SPEED_PLAYER and (new_speed := self.x + self.speed) < WIDTH:
             if self.speed - self.decelaration >= SPEED_PLAYER:
                 self.speed -= self.decelaration
-                self.x += self.speed
+                self.x = new_speed
         else:
             if self.x - self.decelaration > 0:
                 self.x -= self.decelaration * 6
         self.move_sideways()
+
+
 
     def brake(self) -> None:
         """Massive speed down"""
@@ -126,26 +155,35 @@ class Player(Car):
         elif not self.speed:
             if self.x - BRAKE_DECEL > 0:
                 self.x -= BRAKE_DECEL
+        self.brakes_light = True
         # drifting mode to be added
 
+    def rotate(self, negative: int):
+        """
+        Rotate image depending on negative value:
+        negative=0:     rotate left
+        negative=1:     rotate right
+        """
+
+        rotated_image = pg.transform.rotate(PLAYER_IMAGE, self.rotation)
+        rotated_image_brake = pg.transform.rotate(BRAKE_LIGHTS, self.rotation)
+        new_rect = rotated_image.get_rect(center=(self.model.get_rect(topleft=(self.x, self.y)).center))
+        self.model = rotated_image
+        self.brake_model = rotated_image_brake
+        self.rotation += ANGLE_ROTATE * (-1) ** negative
+        self.x, self.y = new_rect.topleft
+
     def rotate_left(self) -> None:
-        """Rotate left image by ANGLE_ROTATE angle and increase rotation value"""
+        """Rotate left image left"""
         if self.rotation < MAX_ANGLE:
-            rotated_image = pg.transform.rotate(PLAYER_IMAGE, self.rotation)
-            new_rect = rotated_image.get_rect(center=(self.model.get_rect(topleft=(self.x, self.y)).center))
-            self.model = rotated_image
-            self.rotation += ANGLE_ROTATE
-            self.x, self.y = new_rect.topleft
+            self.rotate(negative=0)
 
     def rotate_right(self) -> None:
-        """Rotate right image by ANGLE_ROTATE angle and decrease rotation value"""
+        """Rotate right image right"""
         if self.rotation > -MAX_ANGLE:
-            rotated_image = pg.transform.rotate(PLAYER_IMAGE, self.rotation)
-            new_rect = rotated_image.get_rect(center=(self.model.get_rect(topleft=(self.x, self.y)).center))
-            self.model = rotated_image
-            self.rotation -= ANGLE_ROTATE
-            self.x, self.y = new_rect.topleft
+            self.rotate(negative=1)
 
+    #TODO fix rotation back
     def rotate_back(self) -> None:
         if self.rotation > 0:
             self.rotate_right()
@@ -154,7 +192,8 @@ class Player(Car):
             self.model = pg.transform.rotate(PLAYER_IMAGE, self.rotation)
 
 
-def move_player(player: Player) -> None:
+def input_player(player: Player) -> None:
+    """Check if certain keys were pressed or not"""
     keys_pressed = pg.key.get_pressed()
     # counter = Counter(keys_pressed)
     if keys_pressed[pg.K_w]:
@@ -165,10 +204,15 @@ def move_player(player: Player) -> None:
         player.rotate_right()
     if keys_pressed[pg.K_s]:
         player.brake()
-    elif not keys_pressed[pg.K_w]:
+    elif not keys_pressed[pg.K_w] and not keys_pressed[pg.K_SPACE]:
         player.no_acceleration()
-    elif not keys_pressed[pg.K_a] and not keys_pressed[pg.K_d] and not keys_pressed[pg.K_w]:
-        player.rotate_back()
+    if not keys_pressed[pg.K_s]:
+        player.brakes_light = False
+    if keys_pressed[pg.K_SPACE]:
+        player.constant_speed()
+    #TODO check if necessary
+    # elif not keys_pressed[pg.K_a] and not keys_pressed[pg.K_d] and player.rotation != 0:
+    #     player.rotate_back()
 
 
 def draw_tiremarks(player: Player):
@@ -176,42 +220,96 @@ def draw_tiremarks(player: Player):
 
 def update_screen(player: Player, truck: Truck) -> None:
     """Updates screen images' positions"""
-    WIN.blit(player.model, (player.x, player.y))
+    player_model = player.brake_model if player.brakes_light else player.model
+    WIN.blit(player_model, (player.x, player.y))
     WIN.blit(truck.model, (truck.x, truck.y))
     # WIN.blit(LAMP_IMAGE, (300, 750))
     pg.display.update()
 
-def scroll_background(scroll_speed_bg):
-    for index in range(tiles):
-            WIN.blit(HIGHWAY_IMAGE, (index * HIGHWAY_IMAGE_WIDTH + scroll_speed_bg, 0))
-            scroll_speed_bg -= SCROLL_SPEED # -5
+def scroll_background(scroll_speed_bg: int):
+    for index in range(bg_tiles):
+        WIN.blit(HIGHWAY_IMAGE, (index * HIGHWAY_IMAGE_WIDTH + scroll_speed_bg, 0))
+        scroll_speed_bg -= SCROLL_SPEED # -5
     return scroll_speed_bg
 
-def scroll_lamps(scroll_speed_):
-    pass
+#TODO fix lamps
+def scroll_lamps(scroll_speed_lamp: int):
+    for index in range(lamp_tiles):
+        WIN.blit(LAMPS_IMAGE, (index * LAMPS_WIDTH + scroll_speed_lamp, 0))
+        scroll_speed_lamp -= SCROLL_SPEED
+    return scroll_speed_lamp
 
+CHANCE_OF_SPAWN = 0.1
 
+def spawn_traffic(density):
+    chance = random.random()
+    if chance < CHANCE_OF_SPAWN:
+        pass
+
+def check_collision(game: Game, player: Player, traffic_cars: list):
+    pl_centr_x, pl_centr_y = player.get_center_point()
+    boundaries_x = [pl_centr_x + PLAYER_WIDTH // 2, pl_centr_x - PLAYER_WIDTH // 2]
+    boundaries_y = [pl_centr_y + PLAYER_HEIGHT // 2, pl_centr_y - PLAYER_HEIGHT // 2]
+
+    prod = product(boundaries_x, boundaries_y)
+    # mozna za pomoca itertools product miec produkt skladajacy sie z 2 danych i sprawdzac po jednej danej czy wewnatrz
+    for car in traffic_cars:
+        for x_v, y_v in prod:
+            if x_v in range(car.x - 100, car.x + TRUCK_WIDTH) and y_v in range(car.y - 100, car.y + TRUCK_HEIGHT):
+                return True
+        return False
 
 
 def main(*args, **kwargs):
     clock = pg.time.Clock()
     pg.init()
     run = True
+
+    #TODO game not definied yet
+    game1 = Game()
+
     player = Player()
     truck1 = Truck()
     scroll_speed_bg = 0
+    scroll_speed_lamp = 0
+    traffic_cars = [truck1]
     while run:
-        clock.tick(120)
+        clock.tick(60)
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 run = False
+
+        # background scrolling and rendering additional images of highway
         scroll_speed_bg = scroll_background(scroll_speed_bg)
         if abs(scroll_speed_bg) > HIGHWAY_IMAGE_WIDTH:
             scroll_speed_bg = 0
-        move_player(player)
-        truck1.no_acceleration()
+
+        # lamps rendering
+        # TODO fix optimization
+        # scroll_speed_lamp = scroll_lamps(scroll_speed_lamp)
+        # if abs(scroll_speed_lamp) > HIGHWAY_IMAGE_WIDTH:
+        #     scroll_speed_lamp = 0
+
+        # player actions
+        input_player(player)
+
+        # ai actions
+        truck1.constant_speed()
+        # truck1.no_acceleration()
+
+        # print(check_collision(game1, player, traffic_cars))
+
+        # testing classmethod slomo
+        # if player.x > HIGHWAY_IMAGE_WIDTH // 2:
+        #     player.slomo_test()
+
+        #update screen
         update_screen(player, truck1)
-        print(player.rotation)
+        # print(truck1.x, truck1.y)
+        #TODO logging
+        #print(player.rotation)
+
+        print(player.get_center_point())
     pg.quit()
 
 
