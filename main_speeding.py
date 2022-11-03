@@ -33,7 +33,8 @@ from config import (
     LAMPS_IMAGE,
     lamp_tiles,
     LAMPS_WIDTH,
-    BRAKE_LIGHTS
+    BRAKE_LIGHTS,
+    AREA_SURFACE
 )
 
 pg.display.set_caption("Highway ride")
@@ -52,13 +53,22 @@ class Car:
         self._x: float = 600
         self._y : float= 300
         self.rotation = 0
-        self.model
         self.decelaration: int = FRICTION_DECEL
+        self.width: int = 0
+        self.height: int = 0
 
+
+    def get_rect(self):
+        """Create and return Rect object based on self attributes"""
+        return pg.Rect(self.x, self.y, self.width, self.height)
 
     def constant_speed(self) -> None:
         """Press and hold space to set constant speed"""
         self.speed = SCROLL_SPEED
+
+    def get_center_point(self):
+        """Return list of center point coordinates of car"""
+        return [self.x + self.width // 2, self.y + self.height // 2]
 
     @classmethod
     def slomo_test(cls):
@@ -86,27 +96,37 @@ class Car:
 
     # or classmethod Truck
 
+
 class Truck(Car):
     def __init__(self) -> None:
-        self.model = TRUCK_IMAGE
         super().__init__()
+        self.model = TRUCK_IMAGE
+        self.width = TRUCK_WIDTH
+        self.height = TRUCK_HEIGHT
 
 
 
 class Player(Car):
     def __init__(self) -> None:
+        super().__init__()
         self._x = WIDTH // 5
         self._y = HEIGHT // 2
         self.model = PLAYER_IMAGE
+        self.width = PLAYER_WIDTH
+        self.height = PLAYER_HEIGHT
         self.speed = SPEED_PLAYER
         self.decelaration = FRICTION_DECEL
         self.brakes_light = False
         self.brake_model = BRAKE_LIGHTS
-        super().__init__()
-        # self.speed
 
-    def get_center_point(self):
-        return [self.x + PLAYER_WIDTH // 2, self.y + PLAYER_HEIGHT // 2]
+
+    def get_rect(self):
+        """Create and return Rect object based on self attributes"""
+        x_cord = self.x
+        y_cord = self.y
+        if self.rotation < 0:
+            y_cord = self.y + self.width // 2 * self.get_tan(self.rotation)
+        return pg.Rect(x_cord, y_cord, self.width, self.height)
 
 
     @staticmethod
@@ -141,8 +161,6 @@ class Player(Car):
                 self.x -= self.decelaration * 6
         self.move_sideways()
 
-
-
     def brake(self) -> None:
         """Massive speed down"""
         if self.speed > SPEED_PLAYER and self.x + self.speed < WIDTH:
@@ -164,7 +182,6 @@ class Player(Car):
         negative=0:     rotate left
         negative=1:     rotate right
         """
-
         rotated_image = pg.transform.rotate(PLAYER_IMAGE, self.rotation)
         rotated_image_brake = pg.transform.rotate(BRAKE_LIGHTS, self.rotation)
         new_rect = rotated_image.get_rect(center=(self.model.get_rect(topleft=(self.x, self.y)).center))
@@ -218,19 +235,34 @@ def input_player(player: Player) -> None:
 def draw_tiremarks(player: Player):
     pass
 
+
+
 def update_screen(player: Player, truck: Truck) -> None:
     """Updates screen images' positions"""
     player_model = player.brake_model if player.brakes_light else player.model
     WIN.blit(player_model, (player.x, player.y))
     WIN.blit(truck.model, (truck.x, truck.y))
+
+    # testing rect surface for further implementation of collisions
+
+    # colors = get_random_colors()
+    # rect_player = player.get_rect()
+    # rect_truck = truck.get_rect()
+    # WIN.blit(AREA_SURFACE, (0,0))
+    # pg.draw.rect(AREA_SURFACE, colors, rect_truck)
+
     # WIN.blit(LAMP_IMAGE, (300, 750))
     pg.display.update()
+
+
 
 def scroll_background(scroll_speed_bg: int):
     for index in range(bg_tiles):
         WIN.blit(HIGHWAY_IMAGE, (index * HIGHWAY_IMAGE_WIDTH + scroll_speed_bg, 0))
         scroll_speed_bg -= SCROLL_SPEED # -5
     return scroll_speed_bg
+
+
 
 #TODO fix lamps
 def scroll_lamps(scroll_speed_lamp: int):
@@ -239,25 +271,36 @@ def scroll_lamps(scroll_speed_lamp: int):
         scroll_speed_lamp -= SCROLL_SPEED
     return scroll_speed_lamp
 
-CHANCE_OF_SPAWN = 0.1
 
+
+CHANCE_OF_SPAWN = 0.1
 def spawn_traffic(density):
     chance = random.random()
     if chance < CHANCE_OF_SPAWN:
         pass
 
+
+
 def check_collision(game: Game, player: Player, traffic_cars: list):
+    rect_player = player.get_rect()
+    for car in traffic_cars:
+        rect_car = car.get_rect()
+        return True if rect_player.colliderect(rect_car) else False
+
+
+
+def get_corner_of_collision(player: Player) -> object:
     pl_centr_x, pl_centr_y = player.get_center_point()
     boundaries_x = [pl_centr_x + PLAYER_WIDTH // 2, pl_centr_x - PLAYER_WIDTH // 2]
     boundaries_y = [pl_centr_y + PLAYER_HEIGHT // 2, pl_centr_y - PLAYER_HEIGHT // 2]
-
     prod = product(boundaries_x, boundaries_y)
-    # mozna za pomoca itertools product miec produkt skladajacy sie z 2 danych i sprawdzac po jednej danej czy wewnatrz
-    for car in traffic_cars:
-        for x_v, y_v in prod:
-            if x_v in range(car.x - 100, car.x + TRUCK_WIDTH) and y_v in range(car.y - 100, car.y + TRUCK_HEIGHT):
-                return True
-        return False
+    return prod
+
+
+def get_random_colors():
+    """Return RGB list color"""
+    return [random.randint(0, 255) for _ in range(3)]
+
 
 
 def main(*args, **kwargs):
@@ -267,12 +310,12 @@ def main(*args, **kwargs):
 
     #TODO game not definied yet
     game1 = Game()
-
     player = Player()
     truck1 = Truck()
     scroll_speed_bg = 0
     scroll_speed_lamp = 0
     traffic_cars = [truck1]
+
     while run:
         clock.tick(60)
         for event in pg.event.get():
@@ -284,11 +327,13 @@ def main(*args, **kwargs):
         if abs(scroll_speed_bg) > HIGHWAY_IMAGE_WIDTH:
             scroll_speed_bg = 0
 
+
         # lamps rendering
         # TODO fix optimization
         # scroll_speed_lamp = scroll_lamps(scroll_speed_lamp)
         # if abs(scroll_speed_lamp) > HIGHWAY_IMAGE_WIDTH:
         #     scroll_speed_lamp = 0
+
 
         # player actions
         input_player(player)
@@ -297,7 +342,7 @@ def main(*args, **kwargs):
         truck1.constant_speed()
         # truck1.no_acceleration()
 
-        # print(check_collision(game1, player, traffic_cars))
+        print(check_collision(game1, player, traffic_cars))
 
         # testing classmethod slomo
         # if player.x > HIGHWAY_IMAGE_WIDTH // 2:
@@ -305,11 +350,14 @@ def main(*args, **kwargs):
 
         #update screen
         update_screen(player, truck1)
-        # print(truck1.x, truck1.y)
+
         #TODO logging
         #print(player.rotation)
 
-        print(player.get_center_point())
+        # print(player.get_center_point())
+
+
+        # pg.draw.circle(WIN, black, tuple(player.get_center_point()), 20)
     pg.quit()
 
 

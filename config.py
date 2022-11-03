@@ -6,9 +6,10 @@ import math
 # GAME
 WIDTH, HEIGHT = 1900, 1000
 WIN = pg.display.set_mode((WIDTH, HEIGHT))
-DRIVING_AREA_SIZE = (HEIGHT//5, 4*HEIGHT//5)
+DRIVING_AREA_SIZE = (HEIGHT//5 - 50, 3*HEIGHT//4 - 150)
 
-
+# BLANK HIGHWAY AREA (TO TEST RECT)
+AREA_SURFACE = pg.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
 
 # PLAYER
 PLAYER_IMAGE = pg.transform.rotate(pg.image.load("images/player_car_new.png"), -90)
@@ -52,7 +53,8 @@ print(lamp_tiles)
 # TRUCK
 TRUCK_WIDTH, TRUCK_HEIGHT = 161, 534
 TRUCK_IMAGE = pg.transform.rotate(pg.transform.scale(pg.image.load("images/truck.png"), (TRUCK_WIDTH, TRUCK_HEIGHT)), -90)
-
+TRUCK_WIDTH = TRUCK_IMAGE.get_width()
+TRUCK_HEIGHT = TRUCK_IMAGE.get_height()
 
 
 
