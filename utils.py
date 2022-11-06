@@ -15,7 +15,6 @@ def get_random_colors() -> list:
     return [random.randint(0, 255) for _ in range(3)]
 
 
-
 def scroll_background(scroll_speed_bg: int) -> int:
     for index in range(bg_tiles):
         WIN.blit(HIGHWAY_IMAGE, (index * HIGHWAY_IMAGE_WIDTH + scroll_speed_bg, 0))

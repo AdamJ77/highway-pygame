@@ -15,4 +15,9 @@ Rect1.collidepoint(x,y) -> checking if x,y of one point on a rect is colliding w
 """
 
 
+if __name__ == "__main__":
 
+
+   dict1 = {"a": 1, "B":2, "c": 3}
+
+   print(dict1.keys()[0])

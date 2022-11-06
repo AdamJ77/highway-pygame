@@ -2,11 +2,10 @@ import pygame as pg
 import math
 
 
-
 # GAME
 WIDTH, HEIGHT = 1900, 1000
 WIN = pg.display.set_mode((WIDTH, HEIGHT))
-DRIVING_AREA_SIZE = (HEIGHT//5 - 50, 3*HEIGHT//4 - 120)
+DRIVING_AREA_SIZE = (HEIGHT//5 - 50, HEIGHT - 160)
 
 # BLANK HIGHWAY AREA (TO TEST RECT)
 AREA_SURFACE = pg.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
@@ -49,6 +48,12 @@ lamp_tiles = math.ceil((WIDTH / LAMPS_WIDTH)) + 2
 print(lamp_tiles)
 
 
+# CARS
+CAR_IMAGE_RED = pg.transform.rotate(pg.image.load("images/car1.png"), 90)
+CAR_IMAGE_GREEN = pg.transform.rotate(pg.image.load("images/car2.png"), 90)
+CAR_IMAGE_PURPLE = pg.transform.rotate(pg.image.load("images/car3.png"), 90)
+CAR_WIDTH = CAR_IMAGE_RED.get_width()
+CAR_HEIGHT = CAR_IMAGE_RED.get_height()
 
 # TRUCK
 TRUCK_WIDTH, TRUCK_HEIGHT = 161, 534

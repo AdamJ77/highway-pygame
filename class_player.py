@@ -1,5 +1,6 @@
 import pygame as pg
 import math
+from typing import Union
 from classes_other import (
     Car
 )
@@ -38,7 +39,7 @@ class Player(Car):
         x_cord = self.x
         y_cord = self.y
         if self.rotation < 0:
-            y_cord = self.y + self.width // 2 * self.get_tan(self.rotation)
+            y_cord = self.y + self.width // 2 * self.get_tan(self.rotation) + 10
         return pg.Rect(x_cord, y_cord, self.width, self.height)
 
 
@@ -60,7 +61,7 @@ class Player(Car):
         tan_angle = self.get_tan(self.rotation)
         if self.rotation > 0 and self.y - self.speed * tan_angle > DRIVING_AREA_SIZE[0]:
             self.y -= (self.speed + SCROLL_SPEED) * tan_angle
-        if self.rotation < 0 and self.y + self.speed * tan_angle < DRIVING_AREA_SIZE[1]:
+        if self.rotation < 0 and self.y + self.speed * tan_angle < DRIVING_AREA_SIZE[1] - PLAYER_WIDTH * self.get_tan(self.rotation) //2:
             self.y += (self.speed + SCROLL_SPEED) * tan_angle
 
     def no_acceleration(self) -> None:
@@ -78,8 +79,8 @@ class Player(Car):
         """Massive speed down"""
         if self.speed > SPEED_PLAYER and self.x + self.speed < WIDTH:
             self.move_sideways()
-            if self.speed - self.decelaration * 5 >= SPEED_PLAYER:
-                self.speed -= self.decelaration * 5
+            if self.speed - self.decelaration * 4 >= SPEED_PLAYER:
+                self.speed -= self.decelaration * 4
                 self.x += self.speed
             else:
                 self.speed = SPEED_PLAYER
@@ -114,12 +115,13 @@ class Player(Car):
             self.rotate(negative=1)
 
     #TODO fix rotation back
-    def rotate_back(self) -> None:
-        if self.rotation > 0:
+    def rotate_back(self, is_collision: pg.Rect) -> None:
+        if is_collision == "upper":
             self.rotate_right()
             #TODO adjust bounces to the y speed (speed impact)
             self.y += 1
-        if self.rotation < 0:
+        elif self.rotation < 0 and is_collision == "lower":
             self.rotate_left()
             self.y -= 1
-
+        elif is_collision == "lower":
+            self.y -= 1

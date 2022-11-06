@@ -1,4 +1,5 @@
 import pygame as pg
+from enum import Enum, auto
 
 from config import (
     SPEED_PLAYER,
@@ -7,7 +8,12 @@ from config import (
     SCROLL_SPEED,
     TRUCK_IMAGE,
     TRUCK_HEIGHT,
-    TRUCK_WIDTH
+    TRUCK_WIDTH,
+    CAR_HEIGHT,
+    CAR_WIDTH,
+    CAR_IMAGE_RED,
+    CAR_IMAGE_GREEN,
+    CAR_IMAGE_PURPLE
 )
 
 
@@ -26,6 +32,7 @@ class Car:
         self.decelaration: int = FRICTION_DECEL
         self.width: int = 0
         self.height: int = 0
+        self.isOut = False
 
 
     def get_rect(self):
@@ -39,6 +46,8 @@ class Car:
     def get_center_point(self):
         """Return list of center point coordinates of car"""
         return [self.x + self.width // 2, self.y + self.height // 2]
+
+
 
     @classmethod
     def slomo_test(cls):
@@ -61,11 +70,17 @@ class Car:
         self._y = new_y
 
     def no_acceleration(self) -> None:
-        if self.x - self.decelaration > 0:
-            self.x -= self.decelaration * 6
+        if self.x + self.width < 0:
+            self.isOut = True
+        self.x -= self.decelaration * 6
 
     # or classmethod Truck
 
+
+class ColorCar(Enum):
+    CAR_IMAGE_RED = 1
+    CAR_IMAGE_GREEN = 2
+    CAR_IMAGE_PURPLE = 3
 
 
 class Truck(Car):
