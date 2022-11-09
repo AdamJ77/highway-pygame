@@ -39,14 +39,19 @@ class Player(Car):
         x_cord = self.x
         y_cord = self.y
         if self.rotation < 0:
-            y_cord = self.y + self.width // 2 * self.get_tan(self.rotation) + 10
+            y_cord = self.y + self.width // 2 * self.get_tan_abs(self.rotation) + 10
         return pg.Rect(x_cord, y_cord, self.width, self.height)
 
 
     @staticmethod
-    def get_tan(angle) -> float:
+    def get_tan_abs(angle) -> float:
         """Get tangens value of given angle"""
         return math.tan(math.radians(abs(angle)))
+
+    @staticmethod
+    def get_tan(angle) -> float:
+        """Get tangens value of given angle"""
+        return math.tan(math.radians(angle))
 
     def move_forward(self) -> None:
         """Move car forward depending on the car's rotation"""
@@ -58,10 +63,10 @@ class Player(Car):
 
     def move_sideways(self) -> None:
         """Move sideways if there is rotation != 0"""
-        tan_angle = self.get_tan(self.rotation)
+        tan_angle = self.get_tan_abs(self.rotation)
         if self.rotation > 0 and self.y - self.speed * tan_angle > DRIVING_AREA_SIZE[0]:
             self.y -= (self.speed + SCROLL_SPEED) * tan_angle
-        if self.rotation < 0 and self.y + self.speed * tan_angle < DRIVING_AREA_SIZE[1] - PLAYER_WIDTH * self.get_tan(self.rotation) //2:
+        if self.rotation < 0 and self.y + self.speed * tan_angle < DRIVING_AREA_SIZE[1] - PLAYER_WIDTH * self.get_tan_abs(self.rotation) //2:
             self.y += (self.speed + SCROLL_SPEED) * tan_angle
 
     def no_acceleration(self) -> None:
@@ -75,16 +80,17 @@ class Player(Car):
                 self.x -= self.decelaration * 6
         self.move_sideways()
 
+
+    #TODO fix moving sideways while self.speed == 0
     def brake(self) -> None:
         """Massive speed down"""
         if self.speed > SPEED_PLAYER and self.x + self.speed < WIDTH:
             self.move_sideways()
-            if self.speed - self.decelaration * 4 >= SPEED_PLAYER:
-                self.speed -= self.decelaration * 4
+            if (new_speed:=self.speed - self.decelaration * 3) >= SPEED_PLAYER:
+                self.speed = new_speed
                 self.x += self.speed
-            else:
-                self.speed = SPEED_PLAYER
-        elif not self.speed:
+        elif not self.speed :
+            self.move_sideways()
             if self.x - BRAKE_DECEL > 0:
                 self.x -= BRAKE_DECEL
         self.brakes_light = True
