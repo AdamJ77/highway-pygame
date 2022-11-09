@@ -137,8 +137,20 @@ def check_collision_cars(game: Game, player: Player, traffic_cars: np.array) -> 
     for car in traffic_cars:
         rect_car = car.get_rect()
         if rect_player.colliderect(rect_car):
-            return True
+            return check_side_collision(rect_player, rect_car)
     return
+
+def check_side_collision(rect_player: pg.Rect, rect_car: pg.Rect):
+    if rect_player.bottom - rect_car.top in range(0, 5):
+        return "Bottom collision"
+    elif rect_player.top - rect_car.bottom in range(0, 5):
+        return "Top collision"
+    elif rect_player.right - rect_car.left in range(0, 5):
+        return "Right collision"
+    elif rect_player.left - rect_player.right in range(0, 5):
+        return "Left collision"
+    else:
+        return False
 
 def get_corner_of_collision(player: Player) -> product:
     pl_centr_x, pl_centr_y = player.get_center_point()

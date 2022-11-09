@@ -89,7 +89,7 @@ class Player(Car):
             if (new_speed:=self.speed - self.decelaration * 3) >= SPEED_PLAYER:
                 self.speed = new_speed
                 self.x += self.speed
-        elif not self.speed :
+        elif not self.speed:
             self.move_sideways()
             if self.x - BRAKE_DECEL > 0:
                 self.x -= BRAKE_DECEL
@@ -120,7 +120,6 @@ class Player(Car):
         if self.rotation > -MAX_ANGLE:
             self.rotate(negative=1)
 
-    #TODO fix rotation back
     def rotate_back(self, is_collision: pg.Rect) -> None:
         if is_collision == "upper":
             self.rotate_right()
@@ -131,3 +130,4 @@ class Player(Car):
             self.y -= 1
         elif is_collision == "lower":
             self.y -= 1
+
