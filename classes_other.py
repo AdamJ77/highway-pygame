@@ -94,9 +94,9 @@ class Truck(Car):
 
 class Location:
 
-    def __init__(self, spawn_loc, isOccupied=False) -> None:
+    def __init__(self, spawn_loc) -> None:
         self.spawn_location = spawn_loc
-        self.isOccupied = isOccupied
+        self.car_occupying = None
 
     @classmethod
     def location(cls, location):

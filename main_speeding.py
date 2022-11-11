@@ -89,13 +89,7 @@ def update_screen(
         else:
             cars_to_pop.append(index)
     traffic_cars = np.delete(traffic_cars, cars_to_pop)
-    # testing rect surface for further implementation of collisions
-    # colors = get_random_colors()
-    # rect_player = player.get_rect()
-    # rect_truck = truck.get_rect()
-    # area_down = pg.Rect(0, DRIVING_AREA_SIZE[1] - PLAYER_WIDTH * player.get_tan_abs(player.rotation) + 10, WIDTH, 10)
-    # area_up = pg.Rect(0, DRIVING_AREA_SIZE[0], WIDTH, 10)
-    # upper, lower = create_boundaries()
+
     WIN.blit(AREA_SURFACE, (0,0))
     # pg.draw.rect(AREA_SURFACE, (0,0,0), upper)
     # pg.draw.rect(AREA_SURFACE, (0,0,0), lower)
@@ -112,12 +106,25 @@ def create_color_car(
     spawn_locations):
     """Create Car instance with given color and set random empty location"""
 
+    # pick random location from spawn locations
+    location = random.choice(spawn_locations)
+    loc_x, loc_y = location.spawn_location
+
+    # check if location has been chosen before
+    if location.car_occupying:
+        prev_car = location.car_occupying
+        # check if previuos spawned car is still inside of this spawn location
+        if prev_car.x + prev_car.width + 10 >= loc_x:
+            return None
+
+    # create new car instance
     new_car = Car()
     new_car.width = CAR_WIDTH
     new_car.height = CAR_HEIGHT
     new_car.model = col_val
-    location = random.choice(spawn_locations)
-    new_car.x, new_car.y = location.spawn_location
+    new_car.x, new_car.y = loc_x, loc_y
+
+    location.car_occupying = new_car
     return new_car
 
 
@@ -135,7 +142,8 @@ def spawn_traffic(
     if chance_of_spawn < prob_of_spawn:
         col_val = random.choice(list(car_colors.values()))
         new_car = create_color_car(col_val, traffic_cars, spawn_locations)
-        traffic_cars = np.append(traffic_cars, new_car)
+        if new_car:
+            traffic_cars = np.append(traffic_cars, new_car)
     return traffic_cars
 
 
@@ -253,7 +261,7 @@ def main(*args, **kwargs):
     upper_b, lower_b = create_boundaries()
 
     locations_objs = create_spawning_locations()
-    # gen = [location.spawn_location for location in random.choice(locations_objs)]
+
     # print(gen)
     scroll_speed_bg = 0
     scroll_speed_lamp = 0
@@ -305,7 +313,7 @@ def main(*args, **kwargs):
 
         # ai actions
         move_traffic(traffic_cars)
-        traffic_cars = spawn_traffic(30, 4, Car_Colors, traffic_cars, locations_objs)
+        traffic_cars = spawn_traffic(50, 10, Car_Colors, traffic_cars, locations_objs)
 
         print(len(traffic_cars) )
         # testing
