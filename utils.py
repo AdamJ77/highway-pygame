@@ -11,7 +11,15 @@ from config import (
     lamp_tiles,
     CAR_IMAGE_GREEN,
     CAR_IMAGE_RED,
-    CAR_IMAGE_PURPLE
+    CAR_IMAGE_PURPLE,
+    CAR_HEIGHT,
+    CAR_WIDTH,
+    MUSCLE_CAR_IMAGE_YELLOW,
+    MUSCLE_CAR_HEIGHT,
+    MUSCLE_CAR_WIDTH,
+    SEDAN_CAR_IMAGE_BROWN,
+    SEDAN_CAR_HEIGHT,
+    SEDAN_CAR_WIDTH
 )
 
 
@@ -37,7 +45,9 @@ def scroll_lamps(scroll_speed_lamp: int) -> int:
 
 def create_color_cars_dict():
     Car_Colors = {}
-    Car_Colors[ColorCar.CAR_IMAGE_GREEN] = CAR_IMAGE_GREEN
-    Car_Colors[ColorCar.CAR_IMAGE_RED] = CAR_IMAGE_RED
-    Car_Colors[ColorCar.CAR_IMAGE_PURPLE] = CAR_IMAGE_PURPLE
+    Car_Colors[ColorCar.CAR_GREEN] = [CAR_IMAGE_GREEN, (CAR_WIDTH, CAR_HEIGHT)]
+    Car_Colors[ColorCar.CAR_RED] = [CAR_IMAGE_RED, ((CAR_WIDTH, CAR_HEIGHT))]
+    Car_Colors[ColorCar.CAR_PURPLE] = [CAR_IMAGE_PURPLE, (CAR_WIDTH, CAR_HEIGHT)]
+    Car_Colors[ColorCar.MUSCLE_CAR_YELLOW] = [MUSCLE_CAR_IMAGE_YELLOW, (MUSCLE_CAR_WIDTH, MUSCLE_CAR_HEIGHT)]
+    Car_Colors[ColorCar.SEDAN_BROWN] = [SEDAN_CAR_IMAGE_BROWN, (SEDAN_CAR_WIDTH, SEDAN_CAR_HEIGHT)]
     return Car_Colors

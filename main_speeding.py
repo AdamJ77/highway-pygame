@@ -101,9 +101,9 @@ def update_screen(
     return traffic_cars
 
 def create_color_car(
-    col_val,
+    random_car: list,
     traffic_cars: np.array,
-    spawn_locations):
+    spawn_locations: list):
     """Create Car instance with given color and set random empty location"""
 
     # pick random location from spawn locations
@@ -119,9 +119,8 @@ def create_color_car(
 
     # create new car instance
     new_car = Car()
-    new_car.width = CAR_WIDTH
-    new_car.height = CAR_HEIGHT
-    new_car.model = col_val
+    new_car.width, new_car.height = random_car[1]
+    new_car.model = random_car[0]
     new_car.x, new_car.y = loc_x, loc_y
 
     location.car_occupying = new_car
@@ -140,8 +139,10 @@ def spawn_traffic(
         return traffic_cars
     chance_of_spawn = random.randint(0, 1000)
     if chance_of_spawn < prob_of_spawn:
-        col_val = random.choice(list(car_colors.values()))
-        new_car = create_color_car(col_val, traffic_cars, spawn_locations)
+        # choose randomly car
+        rand_val = random.randint(1, 5)
+        random_car = car_colors.get(ColorCar(rand_val))
+        new_car = create_color_car(random_car, traffic_cars, spawn_locations)
         if new_car:
             traffic_cars = np.append(traffic_cars, new_car)
     return traffic_cars

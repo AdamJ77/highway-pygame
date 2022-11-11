@@ -74,9 +74,11 @@ class Car:
 
 
 class ColorCar(Enum):
-    CAR_IMAGE_RED = 1
-    CAR_IMAGE_GREEN = 2
-    CAR_IMAGE_PURPLE = 3
+    CAR_RED = 1
+    CAR_GREEN = 2
+    CAR_PURPLE = 3
+    MUSCLE_CAR_YELLOW = 4
+    SEDAN_BROWN = 5
 
 
 class Truck(Car):
