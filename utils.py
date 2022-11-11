@@ -1,4 +1,5 @@
 import random
+from classes_other import ColorCar
 from config import (
     WIN,
     HIGHWAY_IMAGE,
@@ -7,8 +8,12 @@ from config import (
     LAMPS_IMAGE,
     LAMPS_WIDTH,
     bg_tiles,
-    lamp_tiles
+    lamp_tiles,
+    CAR_IMAGE_GREEN,
+    CAR_IMAGE_RED,
+    CAR_IMAGE_PURPLE
 )
+
 
 def get_random_colors() -> list:
     """Return RGB list color"""
@@ -28,3 +33,11 @@ def scroll_lamps(scroll_speed_lamp: int) -> int:
         WIN.blit(LAMPS_IMAGE, (index * LAMPS_WIDTH + scroll_speed_lamp, 0))
         scroll_speed_lamp -= SCROLL_SPEED
     return scroll_speed_lamp
+
+
+def create_color_cars_dict():
+    Car_Colors = {}
+    Car_Colors[ColorCar.CAR_IMAGE_GREEN] = CAR_IMAGE_GREEN
+    Car_Colors[ColorCar.CAR_IMAGE_RED] = CAR_IMAGE_RED
+    Car_Colors[ColorCar.CAR_IMAGE_PURPLE] = CAR_IMAGE_PURPLE
+    return Car_Colors

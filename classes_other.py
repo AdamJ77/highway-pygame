@@ -18,7 +18,7 @@ from config import (
 
 
 class Game:
-    pass
+    test_rect = False
 
 class Car:
 
@@ -33,6 +33,8 @@ class Car:
         self.width: int = 0
         self.height: int = 0
         self.isOut = False
+        self.old_rect = None
+        self.act_rect = self.get_rect()
 
 
     def get_rect(self):
@@ -46,7 +48,6 @@ class Car:
     def get_center_point(self):
         """Return list of center point coordinates of car"""
         return [self.x + self.width // 2, self.y + self.height // 2]
-
 
 
     @classmethod
@@ -91,3 +92,12 @@ class Truck(Car):
         self.height = TRUCK_HEIGHT
 
 
+class Location:
+
+    def __init__(self, spawn_loc, isOccupied=False) -> None:
+        self.spawn_location = spawn_loc
+        self.isOccupied = isOccupied
+
+    @classmethod
+    def location(cls, location):
+        return cls(location)

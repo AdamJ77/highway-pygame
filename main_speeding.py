@@ -1,6 +1,5 @@
 
 import pygame as pg
-import math
 from collections import Counter
 import random
 from itertools import product
@@ -9,11 +8,12 @@ from typing import Optional
 import numpy as np
 
 from class_player import Player
-from classes_other import Game, Truck, Car, ColorCar
+from classes_other import Game, Truck, Car, ColorCar, Location
 from utils import (
     get_random_colors,
     scroll_background,
-    scroll_lamps
+    scroll_lamps,
+    create_color_cars_dict
 )
 from config import (
     WIN,
@@ -24,9 +24,6 @@ from config import (
     PLAYER_HEIGHT,
     HIGHWAY_IMAGE_WIDTH,
     AREA_SURFACE,
-    CAR_IMAGE_RED,
-    CAR_IMAGE_GREEN,
-    CAR_IMAGE_PURPLE,
     CAR_HEIGHT,
     CAR_WIDTH,
     SPAWN_LOCATIONS
@@ -39,8 +36,14 @@ def draw_tiremarks(player: Player):
 
 
 # PLAYER HANDLING
-def input_player(player: Player, is_collision: Union[pg.Rect, bool], upper: pg.Rect, traffic_cars: Optional[np.array]) -> None:
+def input_player(
+    player: Player,
+    is_collision: Union[pg.Rect, bool],
+    upper: pg.Rect,
+    traffic_cars: Optional[np.array]
+    ) -> None:
     """Handle player's event"""
+
     keys_pressed = pg.key.get_pressed()
     if keys_pressed[pg.K_w] and not keys_pressed[pg.K_s]:
         player.move_forward()
@@ -70,9 +73,13 @@ def input_player(player: Player, is_collision: Union[pg.Rect, bool], upper: pg.R
 
 
 
-# SCREEN UPDATINGw
-def update_screen(player: Player, traffic_cars: np.array) -> None:
+# SCREEN UPDATING
+def update_screen(
+    player: Player,
+    traffic_cars: np.array
+    ) -> None:
     """Updates screen images' positions"""
+
     player_model = player.brake_model if player.brakes_light else player.model
     WIN.blit(player_model, (player.x, player.y))
     cars_to_pop = []
@@ -83,7 +90,6 @@ def update_screen(player: Player, traffic_cars: np.array) -> None:
             cars_to_pop.append(index)
     traffic_cars = np.delete(traffic_cars, cars_to_pop)
     # testing rect surface for further implementation of collisions
-
     # colors = get_random_colors()
     # rect_player = player.get_rect()
     # rect_truck = truck.get_rect()
@@ -100,24 +106,35 @@ def update_screen(player: Player, traffic_cars: np.array) -> None:
     pg.display.update()
     return traffic_cars
 
-def create_color_car(col_val):
+def create_color_car(
+    col_val,
+    traffic_cars: np.array,
+    spawn_locations):
+    """Create Car instance with given color and set random empty location"""
+
     new_car = Car()
     new_car.width = CAR_WIDTH
     new_car.height = CAR_HEIGHT
     new_car.model = col_val
-    new_car.x, new_car.y = (location for location in random.choice(SPAWN_LOCATIONS))
+    location = random.choice(spawn_locations)
+    new_car.x, new_car.y = location.spawn_location
     return new_car
 
 
-def spawn_traffic(prob_of_spawn: int, density: int, car_colors: dict, traffic_cars: np.array):
+def spawn_traffic(
+    prob_of_spawn: int,
+    density: int,
+    car_colors: dict,
+    traffic_cars: np.array,
+    spawn_locations: tuple):
     """Density parameter is max num of cars created"""
+
     if len(traffic_cars) >= density:
         return traffic_cars
     chance_of_spawn = random.randint(0, 1000)
     if chance_of_spawn < prob_of_spawn:
         col_val = random.choice(list(car_colors.values()))
-        new_car = create_color_car(col_val)
-        # print(new_car.x, new_car.y)
+        new_car = create_color_car(col_val, traffic_cars, spawn_locations)
         traffic_cars = np.append(traffic_cars, new_car)
     return traffic_cars
 
@@ -127,30 +144,55 @@ def move_traffic(traffic_cars: np.array):
         car.no_acceleration()
 
 # PHYSICS COLLISION
-def check_collision_with_player(player_rect: pg.Rect, object: pg.Rect) -> bool:
+def check_collision_with_player(
+    player_rect: pg.Rect,
+    object: pg.Rect
+    ) -> bool:
     """Return True if player collided with object else False"""
+
     return True if player_rect.colliderect(object) else False
 
 
-def check_collision_cars(game: Game, player: Player, traffic_cars: np.array) -> bool:
-    rect_player = player.get_rect()
+def check_collision_cars(
+    game: Game,
+    player: Player,
+    traffic_cars: np.array
+    ) -> bool:
+
+    rect_player = player.act_rect
     for car in traffic_cars:
         rect_car = car.get_rect()
         if rect_player.colliderect(rect_car):
-            return check_side_collision(rect_player, rect_car)
+            check_side_collision(rect_player, rect_car, player)
     return
 
-def check_side_collision(rect_player: pg.Rect, rect_car: pg.Rect):
-    if rect_player.bottom - rect_car.top in range(0, 5):
-        return "Bottom collision"
-    elif rect_player.top - rect_car.bottom in range(0, 5):
-        return "Top collision"
-    elif rect_player.right - rect_car.left in range(0, 5):
-        return "Right collision"
-    elif rect_player.left - rect_player.right in range(0, 5):
-        return "Left collision"
-    else:
-        return False
+def check_side_collision(
+    rect_player: pg.Rect,
+    rect_car: pg.Rect,
+    player: Player
+    ):
+
+    # direction = None
+    if rect_player.bottom >= rect_car.top and player.old_rect.bottom:
+        print("bottom collision")
+
+        # direction = "bottom"
+        # constraints.update({"bottom": True})
+    elif rect_player.top <= rect_car.bottom:
+        print("top collision")
+        # direction = "top"
+        # constraints.update({"top": True})
+    elif rect_player.right >= rect_car.left:
+        print("right collision")
+        # direction = "right"
+        # constraints.update({"right": True})
+    elif rect_player.left <= rect_player.right:
+        # direction = "left"
+        print("left collision")
+        # constraints.update({"left": True})
+
+    # constraints = {direc:(False if direc is not direction else True) for direc in ["top", "bottom", "right", "left"]}
+    return
 
 def get_corner_of_collision(player: Player) -> product:
     pl_centr_x, pl_centr_y = player.get_center_point()
@@ -166,19 +208,36 @@ def create_boundaries() -> tuple:
     return (upper, lower)
 
 
-def check_boundaries_collision(player: Player, upper: pg.Rect, lower: pg.Rect):
+def check_boundaries_collision(
+    player: Player,
+    upper: pg.Rect,
+    lower: pg.Rect
+    ):
     """Return True if player collided with upper or lower boundary"""
-    player_rect = player.get_rect()
-    if check_collision_with_player(player_rect, upper):
+
+    if check_collision_with_player(player.act_rect, upper):
         return upper
-    elif check_collision_with_player(player_rect, lower):
+    elif check_collision_with_player(player.act_rect, lower):
         return lower
     else:
         return False
 
 
+def create_spawning_locations():
+    loc1 = Location.location(SPAWN_LOCATIONS[0])
+    loc2 = Location.location(SPAWN_LOCATIONS[1])
+    loc3 = Location.location(SPAWN_LOCATIONS[2])
+    return loc1, loc2, loc3
+
+
+# AI actions
+# maniac/police tailgating player
 def automatic_following(player: Player, car: Car):
     pass
+
+
+
+
 
 
 # MAIN
@@ -193,23 +252,31 @@ def main(*args, **kwargs):
     truck1 = Truck()
     upper_b, lower_b = create_boundaries()
 
+    locations_objs = create_spawning_locations()
+    # gen = [location.spawn_location for location in random.choice(locations_objs)]
+    # print(gen)
     scroll_speed_bg = 0
     scroll_speed_lamp = 0
 
     traffic_cars = np.array([], dtype=object)
     traffic_cars = np.append(traffic_cars, truck1)
-    # traffic_cars[truck1] = [truck1.x, truck1.y]
 
-    Car_Colors = {}
-    Car_Colors[ColorCar.CAR_IMAGE_GREEN] = CAR_IMAGE_GREEN
-    Car_Colors[ColorCar.CAR_IMAGE_RED] = CAR_IMAGE_RED
-    Car_Colors[ColorCar.CAR_IMAGE_PURPLE] = CAR_IMAGE_PURPLE
+    # create color cars
+    Car_Colors = create_color_cars_dict()
+
+    # collisions = ["top", "bottom", "right", "left"]
+    # constraints = {side:False for side in collisions}
+    coll_rect = False
 
     while run:
         clock.tick(60)
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 run = False
+            if event.type == pg.KEYDOWN and event.type == pg.K_q:
+                coll_rect = True
+            else:
+                coll_rect = False
 
         # background scrolling and rendering additional images of highway
         scroll_speed_bg = scroll_background(scroll_speed_bg)
@@ -222,31 +289,32 @@ def main(*args, **kwargs):
         # if abs(scroll_speed_lamp) > HIGHWAY_IMAGE_WIDTH:
         #     scroll_speed_lamp = 0
 
+
+        player.old_rect = player.get_rect()
+        for car in traffic_cars:
+            car.old_rect = car.get_rect()
+        traffic_cars = update_screen(player, traffic_cars)
+
+        player.act_rect = player.get_rect()
         # collision
         is_collision = check_boundaries_collision(player, upper_b, lower_b)
+        check_collision_cars(game1, player, traffic_cars)
 
         # player actions
         input_player(player, is_collision, upper_b, traffic_cars)
-        # print(player.get_tan_abs(player.rotation))
+
         # ai actions
-        # truck1.constant_speed()
-        # truck1.no_acceleration()
         move_traffic(traffic_cars)
-        traffic_cars = spawn_traffic(100, 2, Car_Colors, traffic_cars)
+        traffic_cars = spawn_traffic(30, 4, Car_Colors, traffic_cars, locations_objs)
+
+        print(len(traffic_cars) )
         # testing
-        print(check_collision_cars(game1, player, traffic_cars), len(traffic_cars))
-        # print(player.rotation)
-        # testing classmethod slomo
-        # if player.x > HIGHWAY_IMAGE_WIDTH // 2:
-        #     player.slomo_test()
+        # print(constraints)
 
         #update screen
-        traffic_cars = update_screen(player, traffic_cars)
-        # print(player.speed)
+        # traffic_cars =
 
         #TODO logging
-        # print(player.rotation, is_collision)
-        # print(player.get_center_point())
 
     pg.quit()
 
