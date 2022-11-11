@@ -13,11 +13,23 @@ Rect1.collidepoint(x,y) -> checking if x,y of one point on a rect is colliding w
 
 
 """
+import random
+
+class Location:
+   #  spawn_location = None
+
+    def __init__(self, spawn_loc, isOccupied=False) -> None:
+        self.spawn_location = spawn_loc
+        self.isOccupied = isOccupied
+
+    @classmethod
+    def location(cls, location):
+        return cls(location)
 
 
 if __name__ == "__main__":
 
 
-   dict1 = {"a": 1, "B":2, "c": 3}
-
-   print(dict1.keys()[0])
+   testing = (0, 2, 3)
+   my_choice = random.choice(testing)
+   print(my_choice)

@@ -55,6 +55,16 @@ CAR_IMAGE_PURPLE = pg.transform.rotate(pg.image.load("images/car3.png"), 90)
 CAR_WIDTH = CAR_IMAGE_RED.get_width()
 CAR_HEIGHT = CAR_IMAGE_RED.get_height()
 
+# MUSCLE CAR
+MUSCLE_CAR_IMAGE_YELLOW = pg.transform.rotate(pg.image.load("images/car4.png"), -90)
+MUSCLE_CAR_WIDTH = MUSCLE_CAR_IMAGE_YELLOW.get_width()
+MUSCLE_CAR_HEIGHT = MUSCLE_CAR_IMAGE_YELLOW.get_height()
+
+# SEDAN CAR
+SEDAN_CAR_IMAGE_BROWN = pg.transform.rotate(pg.image.load("images/car5.png"), -90)
+SEDAN_CAR_WIDTH = SEDAN_CAR_IMAGE_BROWN.get_width()
+SEDAN_CAR_HEIGHT = SEDAN_CAR_IMAGE_BROWN.get_height()
+
 # TRUCK
 TRUCK_WIDTH, TRUCK_HEIGHT = 161, 534
 TRUCK_IMAGE = pg.transform.rotate(pg.transform.scale(pg.image.load("images/truck.png"), (TRUCK_WIDTH, TRUCK_HEIGHT)), -90)

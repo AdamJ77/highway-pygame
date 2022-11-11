@@ -8,12 +8,7 @@ from config import (
     SCROLL_SPEED,
     TRUCK_IMAGE,
     TRUCK_HEIGHT,
-    TRUCK_WIDTH,
-    CAR_HEIGHT,
-    CAR_WIDTH,
-    CAR_IMAGE_RED,
-    CAR_IMAGE_GREEN,
-    CAR_IMAGE_PURPLE
+    TRUCK_WIDTH
 )
 
 
