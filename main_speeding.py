@@ -8,25 +8,22 @@ from typing import Optional
 import numpy as np
 
 from class_player import Player
-from classes_other import Game, Truck, Car, ColorCar, Location
+from classes_other import Game, Truck, Car, ColorCar, Police
 from utils import (
     get_random_colors,
     scroll_background,
     scroll_lamps,
-    create_color_cars_dict
+    create_color_cars_dict,
+    create_spawning_locations,
+    create_boundaries
 )
 from config import (
     WIN,
     WIDTH,
     HEIGHT,
     DRIVING_AREA_SIZE,
-    PLAYER_WIDTH,
-    PLAYER_HEIGHT,
     HIGHWAY_IMAGE_WIDTH,
     AREA_SURFACE,
-    CAR_HEIGHT,
-    CAR_WIDTH,
-    SPAWN_LOCATIONS
 )
 
 pg.display.set_caption("Highway ride")
@@ -76,7 +73,8 @@ def input_player(
 # SCREEN UPDATING
 def update_screen(
     player: Player,
-    traffic_cars: np.array
+    traffic_cars: np.array,
+    police: Police
     ) -> None:
     """Updates screen images' positions"""
 
@@ -90,6 +88,7 @@ def update_screen(
             cars_to_pop.append(index)
     traffic_cars = np.delete(traffic_cars, cars_to_pop)
 
+    WIN.blit(police.model, (police.x, police.y))
     WIN.blit(AREA_SURFACE, (0,0))
     # pg.draw.rect(AREA_SURFACE, (0,0,0), upper)
     # pg.draw.rect(AREA_SURFACE, (0,0,0), lower)
@@ -180,7 +179,7 @@ def check_side_collision(
     rect_car: pg.Rect,
     player: Player
     ):
-
+    """Check from on which side was collision"""
     # direction = None
     if rect_player.bottom >= rect_car.top and player.old_rect.bottom:
         print("bottom collision")
@@ -203,18 +202,7 @@ def check_side_collision(
     # constraints = {direc:(False if direc is not direction else True) for direc in ["top", "bottom", "right", "left"]}
     return
 
-def get_corner_of_collision(player: Player) -> product:
-    pl_centr_x, pl_centr_y = player.get_center_point()
-    boundaries_x = [pl_centr_x + PLAYER_WIDTH // 2, pl_centr_x - PLAYER_WIDTH // 2]
-    boundaries_y = [pl_centr_y + PLAYER_HEIGHT // 2, pl_centr_y - PLAYER_HEIGHT // 2]
-    prod = product(boundaries_x, boundaries_y)
-    return prod
 
-
-def create_boundaries() -> tuple:
-    upper = pg.Rect(0, 0, WIDTH, DRIVING_AREA_SIZE[0] + 25)
-    lower = pg.Rect(0, HEIGHT - 170, WIDTH, 100)
-    return (upper, lower)
 
 
 def check_boundaries_collision(
@@ -232,11 +220,7 @@ def check_boundaries_collision(
         return False
 
 
-def create_spawning_locations():
-    loc1 = Location.location(SPAWN_LOCATIONS[0])
-    loc2 = Location.location(SPAWN_LOCATIONS[1])
-    loc3 = Location.location(SPAWN_LOCATIONS[2])
-    return loc1, loc2, loc3
+
 
 
 # AI actions
@@ -275,17 +259,14 @@ def main(*args, **kwargs):
 
     # collisions = ["top", "bottom", "right", "left"]
     # constraints = {side:False for side in collisions}
-    coll_rect = False
+    police_car = Police()
 
     while run:
         clock.tick(60)
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 run = False
-            if event.type == pg.KEYDOWN and event.type == pg.K_q:
-                coll_rect = True
-            else:
-                coll_rect = False
+
 
         # background scrolling and rendering additional images of highway
         scroll_speed_bg = scroll_background(scroll_speed_bg)
@@ -302,7 +283,7 @@ def main(*args, **kwargs):
         player.old_rect = player.get_rect()
         for car in traffic_cars:
             car.old_rect = car.get_rect()
-        traffic_cars = update_screen(player, traffic_cars)
+        traffic_cars = update_screen(player, traffic_cars, police_car)
 
         player.act_rect = player.get_rect()
         # collision
@@ -314,9 +295,12 @@ def main(*args, **kwargs):
 
         # ai actions
         move_traffic(traffic_cars)
-        traffic_cars = spawn_traffic(50, 10, Car_Colors, traffic_cars, locations_objs)
+        traffic_cars = spawn_traffic(40, 0, Car_Colors, traffic_cars, locations_objs)
+        police_car.constant_speed()
+        police_car.turn_police_lights_on(player)
 
-        print(len(traffic_cars) )
+        # print(len(traffic_cars) )
+        print(player.speed)
         # testing
         # print(constraints)
 

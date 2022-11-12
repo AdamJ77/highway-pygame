@@ -1,7 +1,10 @@
+import pygame as pg
 import random
-from classes_other import ColorCar
+from classes_other import ColorCar, Location
 from config import (
     WIN,
+    WIDTH,
+    HEIGHT,
     HIGHWAY_IMAGE,
     HIGHWAY_IMAGE_WIDTH,
     SCROLL_SPEED,
@@ -19,7 +22,9 @@ from config import (
     MUSCLE_CAR_WIDTH,
     SEDAN_CAR_IMAGE_BROWN,
     SEDAN_CAR_HEIGHT,
-    SEDAN_CAR_WIDTH
+    SEDAN_CAR_WIDTH,
+    SPAWN_LOCATIONS,
+    DRIVING_AREA_SIZE
 )
 
 
@@ -51,3 +56,16 @@ def create_color_cars_dict():
     Car_Colors[ColorCar.MUSCLE_CAR_YELLOW] = [MUSCLE_CAR_IMAGE_YELLOW, (MUSCLE_CAR_WIDTH, MUSCLE_CAR_HEIGHT)]
     Car_Colors[ColorCar.SEDAN_BROWN] = [SEDAN_CAR_IMAGE_BROWN, (SEDAN_CAR_WIDTH, SEDAN_CAR_HEIGHT)]
     return Car_Colors
+
+
+def create_spawning_locations():
+    loc1 = Location.location(SPAWN_LOCATIONS[0])
+    loc2 = Location.location(SPAWN_LOCATIONS[1])
+    loc3 = Location.location(SPAWN_LOCATIONS[2])
+    return loc1, loc2, loc3
+
+
+def create_boundaries() -> tuple:
+    upper = pg.Rect(0, 0, WIDTH, DRIVING_AREA_SIZE[0] + 25)
+    lower = pg.Rect(0, HEIGHT - 170, WIDTH, 100)
+    return (upper, lower)

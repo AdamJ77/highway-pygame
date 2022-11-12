@@ -5,7 +5,6 @@ from classes_other import (
     Car
 )
 
-
 from config import (
     WIDTH,
     HEIGHT,
@@ -54,6 +53,13 @@ class Player(Car):
         """Get tangens value of given angle"""
         return math.tan(math.radians(angle))
 
+    @staticmethod
+    def get_cot(angle) -> float:
+        """Get tangens value of given angle"""
+        tan = math.tan(math.radians(abs(angle)))
+        return 1//tan
+
+
     def move_forward(self) -> None:
         """Move car forward depending on the car's rotation"""
         if self.x + self.speed < WIDTH - PLAYER_WIDTH:
@@ -91,9 +97,10 @@ class Player(Car):
                 self.speed = new_speed
                 self.x += self.speed
         elif not self.speed:
+            # if self.rotation != 0:
             self.move_sideways()
             if self.x - BRAKE_DECEL > 0:
-                self.x -= BRAKE_DECEL
+                    self.x -= BRAKE_DECEL
         self.brakes_light = True
         # drifting mode to be added
 

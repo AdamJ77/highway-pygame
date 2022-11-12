@@ -71,7 +71,14 @@ TRUCK_IMAGE = pg.transform.rotate(pg.transform.scale(pg.image.load("images/truck
 TRUCK_WIDTH = TRUCK_IMAGE.get_width()
 TRUCK_HEIGHT = TRUCK_IMAGE.get_height()
 
+# POLICE
+POLICE_CAR_IMAGE = pg.transform.rotate(pg.image.load("images/police_car.png"), -90)
+POLICE_CAR_IMAGE_LIGHTS_R = pg.transform.rotate(pg.image.load("images/police_car_lights_r.png"), -90)
+POLICE_CAR_IMAGE_LIGHTS_B = pg.transform.rotate(pg.image.load("images/police_car_lights_b.png"), -90)
+POLICE_CAR_WIDTH = POLICE_CAR_IMAGE.get_width()
+POLICE_CAR_HEIGHT = POLICE_CAR_IMAGE.get_height()
 
+FREQUENCY_OF_POLICE_LIGHTS = 10
 
 # OTHER OBJECTS
 

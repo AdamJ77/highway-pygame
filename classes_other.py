@@ -1,5 +1,6 @@
 import pygame as pg
 from enum import Enum, auto
+# from class_player import Player
 
 from config import (
     SPEED_PLAYER,
@@ -8,7 +9,13 @@ from config import (
     SCROLL_SPEED,
     TRUCK_IMAGE,
     TRUCK_HEIGHT,
-    TRUCK_WIDTH
+    TRUCK_WIDTH,
+    POLICE_CAR_IMAGE,
+    POLICE_CAR_HEIGHT,
+    POLICE_CAR_WIDTH,
+    POLICE_CAR_IMAGE_LIGHTS_B,
+    POLICE_CAR_IMAGE_LIGHTS_R,
+    FREQUENCY_OF_POLICE_LIGHTS
 )
 
 
@@ -98,3 +105,25 @@ class Location:
     @classmethod
     def location(cls, location):
         return cls(location)
+
+
+class Police(Car):
+    def __init__(self) -> None:
+        super().__init__()
+        self.model = POLICE_CAR_IMAGE
+        self.width = POLICE_CAR_WIDTH
+        self.height = POLICE_CAR_HEIGHT
+        self.changing_lights = 1
+
+    def follow_car(self, car: Car):
+        pass
+
+    def turn_police_lights_on(self, player):
+        if self.changing_lights % FREQUENCY_OF_POLICE_LIGHTS != 0:
+            self.changing_lights += 1
+            return
+        self.changing_lights = 1
+        # if player.speed > SPEED_PLAYER + 10:
+        self.model = POLICE_CAR_IMAGE_LIGHTS_B if self.model == POLICE_CAR_IMAGE_LIGHTS_R else POLICE_CAR_IMAGE_LIGHTS_R
+        # else:
+        #     self.model = POLICE_CAR_IMAGE
