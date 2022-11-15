@@ -1,6 +1,6 @@
 import pygame as pg
 import random
-from classes_other import ColorCar, Location
+from classes_other import ColorCar, Location, Car
 from config import (
     WIN,
     WIDTH,
@@ -33,6 +33,11 @@ def get_random_colors() -> list:
     return [random.randint(0, 255) for _ in range(3)]
 
 
+def get_random_car(car_colors: dict):
+    rand_val = random.randint(1, 5)
+    return car_colors.get(ColorCar(rand_val))
+
+
 def scroll_background(scroll_speed_bg: int) -> int:
     for index in range(bg_tiles):
         WIN.blit(HIGHWAY_IMAGE, (index * HIGHWAY_IMAGE_WIDTH + scroll_speed_bg, 0))
@@ -59,9 +64,9 @@ def create_color_cars_dict():
 
 
 def create_spawning_locations():
-    loc1 = Location.location(SPAWN_LOCATIONS[0])
-    loc2 = Location.location(SPAWN_LOCATIONS[1])
-    loc3 = Location.location(SPAWN_LOCATIONS[2])
+    loc1 = Location.location(SPAWN_LOCATIONS[0], 1)
+    loc2 = Location.location(SPAWN_LOCATIONS[1], 2)
+    loc3 = Location.location(SPAWN_LOCATIONS[2], 3)
     return loc1, loc2, loc3
 
 
@@ -69,3 +74,20 @@ def create_boundaries() -> tuple:
     upper = pg.Rect(0, 0, WIDTH, DRIVING_AREA_SIZE[0] + 25)
     lower = pg.Rect(0, HEIGHT - 170, WIDTH, 100)
     return (upper, lower)
+
+
+def create_traffic_car(
+    chosen_car: list,
+    location: object
+    ):
+    """
+    Create Car object with given model and location
+    """
+    new_car = Car()
+    new_car.width, new_car.height = chosen_car[1]
+    new_car.model = chosen_car[0]
+    new_car.x, new_car.y = location.spawn_location
+    new_car.line = location.line_value
+    location.car_occupying = new_car
+    return new_car
+

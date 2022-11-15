@@ -1,5 +1,6 @@
 import pygame as pg
 from enum import Enum, auto
+import math
 # from class_player import Player
 
 from config import (
@@ -15,7 +16,10 @@ from config import (
     POLICE_CAR_WIDTH,
     POLICE_CAR_IMAGE_LIGHTS_B,
     POLICE_CAR_IMAGE_LIGHTS_R,
-    FREQUENCY_OF_POLICE_LIGHTS
+    FREQUENCY_OF_POLICE_LIGHTS,
+    ANGLE_ROTATE,
+    MAX_ANGLE_TRAFFIC_CHANGE_LINE,
+    TIME_OF_TURN
 )
 
 
@@ -37,7 +41,9 @@ class Car:
         self.isOut = False
         self.old_rect = None
         self.act_rect = self.get_rect()
-
+        self.line = None        # 1 - upper line, 2 - middle line, 3 - lower line
+        self.time_of_turn = 1
+        self.still_change = True
 
     def get_rect(self):
         """Create and return Rect object based on self attributes"""
@@ -72,12 +78,67 @@ class Car:
     def y(self, new_y):
         self._y = new_y
 
-    def no_acceleration(self) -> None:
+    def free_decelaration(self) -> None:
         if self.x + self.width < 0:
             self.isOut = True
         self.x -= self.decelaration * 6
+        self.move_sideways()
 
+    @staticmethod
+    def get_tan_abs(angle) -> float:
+        """Get tangens value of given angle"""
+        return math.tan(math.radians(abs(angle)))
+
+    def move_sideways(self) -> None:
+        """Move sideways if there is rotation != 0"""
+        tan_angle = self.get_tan_abs(self.rotation)
+        if self.rotation > 0:
+            self.y -= (self.speed + SCROLL_SPEED) * tan_angle
+        if self.rotation < 0:
+            self.y += (self.speed + SCROLL_SPEED) * tan_angle
+
+    def rotate(self, negative: int):
+        """
+        Rotate image depending on negative value:
+        negative=0:     rotate left
+        negative=1:     rotate right
+        """
+        rotated_image = pg.transform.rotate(self.model, self.rotation)
+        new_rect = rotated_image.get_rect(center=(self.model.get_rect(topleft=(self.x, self.y)).center))
+        self.model = rotated_image
+        self.rotation += (-1) ** negative
+        self.x, self.y = new_rect.topleft
+
+    def rotate_left(self) -> None:
+        """Rotate left image left"""
+        # if self.rotation < MAX_ANGLE_TRAFFIC_CHANGE_LINE:
+        self.rotate(negative=0)
+
+    def rotate_right(self) -> None:
+        """Rotate right image right"""
+        # if self.rotation > -MAX_ANGLE_TRAFFIC_CHANGE_LINE:
+        self.rotate(negative=1)
+
+    def change_line(self):
+        # if self.still_change:
+            if self.time_of_turn < 10:
+                # if self.rotation > -20:
+                self.rotate_right()
+            self.time_of_turn += 1
+            # if self.time_of_turn >= 200:
+            #     if self.rotation != 0:
+            #         self.rotate_left()
+            #     else:
+            #         self.time_of_turn = 1
+            #         self.still_change = False
+        # elif self.time_of_turn < 2 * TIME_OF_TURN and self.rotation != 0:
+        #     self.rotate_left()
+        #     self.move_sideways()
+        #     self.time_of_turn += 1
+        # else:
+        #     self.time_of_turn = 1
     # or classmethod Truck
+
 
 
 class ColorCar(Enum):
@@ -88,6 +149,7 @@ class ColorCar(Enum):
     SEDAN_BROWN = 5
 
 
+
 class Truck(Car):
     def __init__(self) -> None:
         super().__init__()
@@ -96,20 +158,24 @@ class Truck(Car):
         self.height = TRUCK_HEIGHT
 
 
+
 class Location:
 
-    def __init__(self, spawn_loc) -> None:
+    def __init__(self, spawn_loc, line_value) -> None:
         self.spawn_location = spawn_loc
         self.car_occupying = None
+        self.line_value = line_value
 
     @classmethod
-    def location(cls, location):
-        return cls(location)
+    def location(cls, location, line_val):
+        return cls(location, line_val)
+
 
 
 class Police(Car):
     def __init__(self) -> None:
         super().__init__()
+        self.x = 1500
         self.model = POLICE_CAR_IMAGE
         self.width = POLICE_CAR_WIDTH
         self.height = POLICE_CAR_HEIGHT
@@ -118,12 +184,21 @@ class Police(Car):
     def follow_car(self, car: Car):
         pass
 
-    def turn_police_lights_on(self, player):
+    def turn_police_lights_on(self):
         if self.changing_lights % FREQUENCY_OF_POLICE_LIGHTS != 0:
             self.changing_lights += 1
             return
         self.changing_lights = 1
-        # if player.speed > SPEED_PLAYER + 10:
         self.model = POLICE_CAR_IMAGE_LIGHTS_B if self.model == POLICE_CAR_IMAGE_LIGHTS_R else POLICE_CAR_IMAGE_LIGHTS_R
-        # else:
-        #     self.model = POLICE_CAR_IMAGE
+
+    def turn_police_ligths_off(self):
+        self.model = POLICE_CAR_IMAGE
+
+    def free_decelaration(self):
+        if self.x - self.decelaration > 0:
+            self.x -= self.decelaration * 6
+        self.move_sideways()
+
+
+    def automatic_following(other: Car):
+        pass
