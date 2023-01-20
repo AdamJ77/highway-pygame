@@ -1,6 +1,6 @@
-import pygame as pg
 import math
 
+import pygame as pg
 
 # GAME
 WIDTH, HEIGHT = 1900, 1000

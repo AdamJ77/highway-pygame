@@ -1,27 +1,17 @@
 
-import pygame as pg
 import random
-from typing import Union
-from typing import Optional
+from typing import Optional, Union
+
 import numpy as np
+import pygame as pg
 
 from class_player import Player
-from classes_other import Game, Truck, Police
-from utils import (
-    get_random_colors,
-    scroll_background,
-    scroll_lamps,
-    create_color_cars_dict,
-    create_spawning_locations,
-    create_boundaries,
-    get_random_car,
-    create_traffic_car
-)
-from config import (
-    WIN,
-    HIGHWAY_IMAGE_WIDTH,
-    AREA_SURFACE,
-)
+from classes_other import Game, Police, Truck
+from config import AREA_SURFACE, HIGHWAY_IMAGE_WIDTH, WIN
+from utils import (create_boundaries, create_color_cars_dict,
+                   create_spawning_locations, create_traffic_car,
+                   get_random_car, get_random_colors, scroll_background,
+                   scroll_lamps)
 
 pg.display.set_caption("Highway ride")
 
@@ -60,7 +50,9 @@ def input_player(
 def debug(
     player: Player,
     traffic_cars: np.array,
-    police_car: Police
+    police_car: Police,
+    upper_b: pg.Rect,
+    lower_b: pg.Rect
     ):
     """
     Check for debug functions :
@@ -73,11 +65,13 @@ def debug(
             car_rect = car.get_rect()
             pg.draw.rect(AREA_SURFACE, (255,255,255), car_rect, 1)
         pg.draw.rect(AREA_SURFACE, (255,255,255), rect_player, 1)
+        pg.draw.rect(AREA_SURFACE, (127, 127, 127), upper_b, 1 )
+        pg.draw.rect(AREA_SURFACE, (127, 127, 127), lower_b, 1 )
 
     # police_car.constant_speed()
     police_car.free_decelaration()
     # police_car.turn_police_lights_on()
-    print(police_car.rotation, police_car.x, police_car.y)
+    # print(police_car.rotation, police_car.x, police_car.y)
     police_car.change_line()
 
 
@@ -155,7 +149,7 @@ def check_collision_with_player(
     """
     return True if player_rect.colliderect(object) else False
 
-
+# CHECK TRAFFIC COLLISION
 def check_collision_cars(
     player: Player,
     traffic_cars: np.array
@@ -220,6 +214,7 @@ def collisions(
     lower: pg.Rect
     ):
     is_collision = check_boundaries_collision(player, upper, lower)
+    print(is_collision)
     if is_collision:
         boundary = "upper" if is_collision is upper else "lower"
         player.rotate_back(boundary)
@@ -254,7 +249,8 @@ def main(*args, **kwargs):
 
 
     while run:
-        clock.tick(60)
+        pg.display.flip()
+        clock.tick(40)
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 run = False
@@ -278,7 +274,7 @@ def main(*args, **kwargs):
         traffic_cars = spawn_traffic(20, 4, Car_Colors, traffic_cars, locations_objs)
 
         # DEBUG
-        debug(player, traffic_cars, police_car)
+        debug(player, traffic_cars, police_car, upper_b, lower_b)
     pg.quit()
 
 
