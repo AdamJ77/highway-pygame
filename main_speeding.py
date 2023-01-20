@@ -53,7 +53,7 @@ def debug(
     police_car: Police,
     upper_b: pg.Rect,
     lower_b: pg.Rect
-    ):
+    ) -> None:
     """
     Check for debug functions :
     q - draw all cars' rectangles
@@ -117,7 +117,7 @@ def spawn_traffic(
     density: int,
     car_colors: dict,
     traffic_cars: np.array,
-    spawn_locations: list):
+    spawn_locations: list) -> np.ndarray:
     """
     Density parameter is max num of cars created
     """
