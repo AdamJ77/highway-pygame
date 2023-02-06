@@ -3,7 +3,7 @@ import math
 import pygame as pg
 
 # GAME
-WIDTH, HEIGHT = 1900, 1000
+WIDTH, HEIGHT = 1900, 1080
 WIN = pg.display.set_mode((WIDTH, HEIGHT))  # maybe add pg.FULLSCREEN ?
 DRIVING_AREA_SIZE = (HEIGHT//5 - 50, HEIGHT - 160)
 
@@ -34,6 +34,7 @@ BRAKE_LIGHTS = pg.transform.rotate(pg.image.load("images/lights_on.png"), -90)
 # BACKGROUND
 HIGHWAY_IMAGE = pg.transform.scale(pg.image.load("images/highway2.png"), (WIDTH, HEIGHT))
 HIGHWAY_IMAGE_WIDTH = HIGHWAY_IMAGE.get_width()
+
 # BACKGROUND SCROLL CONFIG
 bg_tiles = math.ceil((WIDTH / HIGHWAY_IMAGE_WIDTH)) + 2    # maybe 1
 SCROLL_SPEED = 5
