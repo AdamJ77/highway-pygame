@@ -1,7 +1,10 @@
+import random
+
 import numpy as np
 import pygame as pg
 
 from class_player import Player
+from classes_other import Chopper
 
 # PHYSICS COLLISIONs
 
@@ -16,17 +19,18 @@ def check_collision_with_player(
 
 # CHECK TRAFFIC COLLISION
 def check_collision_cars(
-    player: Player,
+    player_rect: pg.Rect,
     traffic_cars: np.array
     ) -> bool:
     """
     Check if player's rect collided with other car's rect
     """
-    rect_player = player.act_rect
+    # rect_player = player.get_rect()
     for car in traffic_cars:
         rect_car = car.get_rect()
-        if rect_player.colliderect(rect_car):
-            check_side_collision(rect_player, rect_car, player)
+        if player_rect.colliderect(rect_car):
+            # check_side_collision(player_rect, rect_car, player)
+            pass
     return
 
 
@@ -58,16 +62,16 @@ def check_side_collision(
 
 
 def check_boundaries_collision(
-    player: Player,
+    player_rect: pg.Rect,
     upper: pg.Rect,
     lower: pg.Rect
     ):
     """Return True if player collided with upper or lower boundary"""
 
-    if check_collision_with_player(player.act_rect, upper):
+    if check_collision_with_player(player_rect, upper):
         # print("upper")
         return upper
-    elif check_collision_with_player(player.act_rect, lower):
+    elif check_collision_with_player(player_rect, lower):
         # print("lower")
         return lower
     else:
@@ -79,11 +83,20 @@ def collisions(
     player: Player,
     traffic_cars: np.array,
     upper: pg.Rect,
-    lower: pg.Rect
+    lower: pg.Rect,
+    chopper: Chopper
     )-> None:
-    is_collision = check_boundaries_collision(player, upper, lower)
-    # print(is_collision)
-    if is_collision:
+    player_rect = player.get_rect()
+    if is_collision:= check_boundaries_collision(player_rect, upper, lower):
         boundary = "upper" if is_collision is upper else "lower"
         player.rotate_back(boundary)
     # check_collision_cars(player, traffic_cars)
+
+
+    if check_collision_with_player(player_rect, chopper.get_chopper_rect()) and not chopper.isMoving:
+        chopper.isMoving = True
+        # rand_x = random.randint(1, 2)
+        # rand_y = random.randint(1, 2)
+        rand_x = 1000
+        rand_y = 500
+        chopper.destination = (rand_x, rand_y)

@@ -6,7 +6,7 @@ import numpy as np
 import pygame as pg
 
 from class_player import Player
-from classes_other import Chopper, Cloud, Game, Police, Truck
+from classes_other import Chopper, Cloud, Game, Police, Truck, distance
 from collisions import collisions
 from config import (AREA_SURFACE, CLOUD_DENSITY, HIGHWAY_IMAGE_WIDTH,
                     NUM_OF_TRAFFIC, PROBABILITY_OF_SPAWN,
@@ -42,6 +42,8 @@ def input_player(
         player.brakes_light = False
     if keys_pressed[pg.K_SPACE]:
         player.constant_speed()
+    if keys_pressed[pg.K_c]:
+        WIN.fill(pg.Color(0,0,0,0))
     if keys_pressed[pg.K_p]:
         pass
 
@@ -219,10 +221,17 @@ def main(*args, **kwargs):
         traffic_cars, clouds = update_screen(player, traffic_cars, police_car, chopper, clouds)
 
         # CHECK IF PLAYER COLLIDED WITH BOUNDARY OR CAR
-        collisions(player, traffic_cars, upper_b, lower_b)
+        collisions(player, traffic_cars, upper_b, lower_b, chopper)
 
         # CHOPPER TURBINES TEST
         chopper.rotate_turbine()
+
+        # CHOPPER MOVING TEST
+        print(chopper.isMoving, distance((chopper.x, chopper.y), chopper.destination))
+        if chopper.isMoving:
+            chopper.moveToDestination()
+            if chopper.onDestination():
+                chopper.isMoving = False
 
         # CLOUD TESTING
         clouds = spawn_clouds(PROBABILITY_OF_SPAWN_CLOUD, CLOUD_DENSITY, clouds)

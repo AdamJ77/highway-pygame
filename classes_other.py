@@ -1,12 +1,13 @@
 import math
+import random
 from enum import Enum, auto
 
 import pygame as pg
 
-from config import (ANGLE_ROTATE, CHOPPER_STARTING_POINT,
+from config import (ANGLE_ROTATE, CHOPPER_SPEED, CHOPPER_STARTING_POINT,
                     FREQUENCY_OF_POLICE_LIGHTS, FRICTION_DECEL,
-                    MAX_ANGLE_TRAFFIC_CHANGE_LINE, MAX_SPEED_PLAYER,
-                    POLICE_CAR_HEIGHT, POLICE_CAR_IMAGE,
+                    MARGIN_OF_ERROR, MAX_ANGLE_TRAFFIC_CHANGE_LINE,
+                    MAX_SPEED_PLAYER, POLICE_CAR_HEIGHT, POLICE_CAR_IMAGE,
                     POLICE_CAR_IMAGE_LIGHTS_B, POLICE_CAR_IMAGE_LIGHTS_R,
                     POLICE_CAR_WIDTH, POLICE_CHOPPER_HEIGHT,
                     POLICE_CHOPPER_IMAGE, POLICE_CHOPPER_WIDTH, SCROLL_SPEED,
@@ -206,8 +207,9 @@ class Chopper:
         self.model = POLICE_CHOPPER_IMAGE
         self.height = POLICE_CHOPPER_HEIGHT
         self.width = POLICE_CHOPPER_WIDTH
-        # self.x_turbine = 100
-        # self.y_turbine = 100
+        self.isMoving = False
+        self.destination = None
+
         self.turbine_model = TURBINE_IMAGE
         self.turbine_image = self.turbine_model
         self.turbine_height = TURBINE_HEIGHT
@@ -216,6 +218,9 @@ class Chopper:
         self.turbine_speed = TURBINE_SPEED
         self.turbine_rect = self.turbine_image.get_rect()
         self.turbine_rect.center = self.turbine_center_point()
+    
+    def get_chopper_rect(self):
+        return pg.Rect(self.x, self.y, self.width, self.height)
 
     def turbine_center_point(self) -> tuple[float]:
         return (self.x + self.width / 2 + 15, self.y + self.height / 2 ) 
@@ -223,7 +228,7 @@ class Chopper:
     def rotate_turbine(self):
         self.turbine_image = pg.transform.rotate(self.turbine_model, self.turbine_rotation)
         self.turbine_rotation += TURBINE_SPEED % 360  # Value will reapeat after 359. This prevents angle to overflow.
-        x, y = self.turbine_rect.center  # Save its current center.
+        x, y = self.turbine_center_point() # Save its current center.
         self.turbine_rect = self.turbine_image.get_rect()  # Replace old rect with new rect.
         self.turbine_rect.center = (x, y)  # Put the new rect's center at old center.
 
@@ -242,8 +247,32 @@ class Chopper:
     @y.setter
     def y(self, new_y):
         self._y = new_y
+    
+    def moveToDestination(self):
+        self.x += CHOPPER_SPEED * cos_x(self.destination, (self.x, self.y))
+        self.y += CHOPPER_SPEED * cos_y(self.destination, (self.x, self.y))
+    
+    def onDestination(self) -> bool:
+        if distance((self.x, self.y), self.destination) < MARGIN_OF_ERROR:
+            return True
+        else:
+            return False
 
 
+def distance(point1, point2) -> float:
+    return math.sqrt(((point1[0] - point2[0]) ** 2) + ((point1[1] - point2[1]) ** 2))
+
+def x_dist(point1_x: int, point2_x: int) -> int:
+    return point1_x - point2_x
+
+def y_dist(point1_y: int, point2_y: int) -> int:
+    return point1_y - point2_y
+
+def cos_x(point1: tuple[int], point2: tuple[int]) -> float:
+    return x_dist(point1[0], point2[0]) / distance(point1, point2)
+
+def cos_y(point1: tuple[int], point2: tuple[int]) -> float:
+    return y_dist(point1[1], point2[1]) / distance(point1, point2)  
 
     
 class Cloud(pg.sprite.Sprite):

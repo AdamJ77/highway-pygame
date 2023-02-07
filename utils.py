@@ -58,7 +58,7 @@ def create_spawning_locations() -> tuple[Location]:
 
 def create_boundaries() -> tuple[pg.Rect]:
     upper = pg.Rect(0, 0, WIDTH, DRIVING_AREA_SIZE[0] + 25)
-    lower = pg.Rect(0, DRIVING_AREA_SIZE[1], WIDTH, 100)
+    lower = pg.Rect(0, DRIVING_AREA_SIZE[1] - 35, WIDTH, 100)
     return (upper, lower)
 
 

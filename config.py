@@ -99,6 +99,8 @@ POLICE_CHOPPER_IMAGE = pg.transform.rotate(pg.image.load("images/police_chopper.
 POLICE_CHOPPER_WIDTH = POLICE_CHOPPER_IMAGE.get_width()
 POLICE_CHOPPER_HEIGHT = POLICE_CHOPPER_IMAGE.get_height()
 CHOPPER_STARTING_POINT = WIDTH//4, HEIGHT//2
+CHOPPER_SPEED = 3
+MARGIN_OF_ERROR = 2
 
 TURBINE_IMAGE = pg.transform.rotate(pg.image.load("images/turbine2.png"), -90)
 TURBINE_HEIGHT, TURBINE_WIDTH = TURBINE_IMAGE.get_height(), TURBINE_IMAGE.get_width()

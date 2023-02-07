@@ -18,7 +18,7 @@ class Player(Car):
         self.height = PLAYER_HEIGHT
         self.brakes_light = False
         self.brake_model = BRAKE_LIGHTS
-        self.act_rect = self.get_rect()
+        # self.act_rect = self.get_rect()
 
 
     def get_rect(self):
