@@ -6,11 +6,12 @@ import numpy as np
 import pygame as pg
 
 from class_player import Player
-from classes_other import Chopper, Game, Police, Truck
+from classes_other import Chopper, Cloud, Game, Police, Truck
 from collisions import collisions
-from config import (AREA_SURFACE, HIGHWAY_IMAGE_WIDTH, NUM_OF_TRAFFIC,
-                    PROBABILITY_OF_SPAWN, WIN)
-from utils import (create_boundaries, create_color_cars_dict,
+from config import (AREA_SURFACE, CLOUD_DENSITY, HIGHWAY_IMAGE_WIDTH,
+                    NUM_OF_TRAFFIC, PROBABILITY_OF_SPAWN,
+                    PROBABILITY_OF_SPAWN_CLOUD, WIN)
+from utils import (create_boundaries, create_cloud, create_color_cars_dict,
                    create_spawning_locations, create_traffic_car,
                    get_random_car, get_random_colors, scroll_background,
                    scroll_lamps)
@@ -84,7 +85,8 @@ def update_screen(
     player: Player,
     traffic_cars: np.array,
     police: Police,
-    chopper: Chopper
+    chopper: Chopper,
+    clouds: np.array
     ) -> None:
     """
     Updates screen images' positions
@@ -102,9 +104,18 @@ def update_screen(
     WIN.blit(police.model, (police.x, police.y))
     WIN.blit(chopper.model, (chopper.x, chopper.y))
     WIN.blit(chopper.turbine_image, chopper.turbine_rect)
+
+    clouds_to_pop = []
+    for i, cloud in enumerate(clouds):
+        if not cloud.isOut:
+            WIN.blit(cloud.model, (cloud.x, cloud.y))
+        else:
+            clouds_to_pop.append(i)
+    clouds = np.delete(clouds, clouds_to_pop)
+
     WIN.blit(AREA_SURFACE, (0,0))
     pg.display.update()
-    return traffic_cars
+    return traffic_cars, clouds
 
 
 def check_location(
@@ -141,13 +152,30 @@ def spawn_traffic(
     return traffic_cars
 
 
+def spawn_clouds(
+    prob_of_spawn: int,
+    density: int,
+    clouds: np.ndarray[Cloud]) -> np.ndarray:
+    """
+    Spawn clouds
+    """
+    if len(clouds) >= density:
+        return clouds
+    chance_of_spawn = random.randint(0, 1000)
+    if chance_of_spawn < prob_of_spawn:
+        cloud = create_cloud()
+        clouds = np.append(clouds, cloud)
+    return clouds
+
+
 def move_traffic(traffic_cars: np.array):
     for car in traffic_cars:
         car.free_decelaration()
 
 
-# AI actions
-# maniac/police tailgating player
+def move_clouds(clouds: np.array):
+    for cloud in clouds:
+        cloud.move()
 
 
 # MAIN
@@ -173,6 +201,7 @@ def main(*args, **kwargs):
     traffic_cars = np.array([], dtype=object)
     traffic_cars = np.append(traffic_cars, truck1)
 
+    clouds = np.array([], dtype=object)
 
     while run:
         pg.display.flip()
@@ -187,7 +216,7 @@ def main(*args, **kwargs):
             scroll_speed_bg = 0
 
         # UPDATE CARS IMAGES
-        traffic_cars = update_screen(player, traffic_cars, police_car, chopper)
+        traffic_cars, clouds = update_screen(player, traffic_cars, police_car, chopper, clouds)
 
         # CHECK IF PLAYER COLLIDED WITH BOUNDARY OR CAR
         collisions(player, traffic_cars, upper_b, lower_b)
@@ -195,6 +224,9 @@ def main(*args, **kwargs):
         # CHOPPER TURBINES TEST
         chopper.rotate_turbine()
 
+        # CLOUD TESTING
+        clouds = spawn_clouds(PROBABILITY_OF_SPAWN_CLOUD, CLOUD_DENSITY, clouds)
+        move_clouds(clouds)
         # CHECK FOR PLAYER'S INPUT
         input_player(player, police_car)
 

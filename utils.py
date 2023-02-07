@@ -1,18 +1,20 @@
 import random
 
+import numpy as np
 import pygame as pg
 
-from classes_other import Car, ColorCar, Location
+from classes_other import Car, Cloud, ColorCar, Location
 from config import (CAR_HEIGHT, CAR_IMAGE_GREEN, CAR_IMAGE_PURPLE,
-                    CAR_IMAGE_RED, CAR_WIDTH, DRIVING_AREA_SIZE, HEIGHT,
-                    HIGHWAY_IMAGE, HIGHWAY_IMAGE_WIDTH, LAMPS_IMAGE,
-                    LAMPS_WIDTH, MUSCLE_CAR_HEIGHT, MUSCLE_CAR_IMAGE_YELLOW,
+                    CAR_IMAGE_RED, CAR_WIDTH, CLOUD_1_IMAGE, CLOUD_2_IMAGE,
+                    DRIVING_AREA_SIZE, HEIGHT, HIGHWAY_IMAGE,
+                    HIGHWAY_IMAGE_WIDTH, LAMPS_IMAGE, LAMPS_WIDTH,
+                    MUSCLE_CAR_HEIGHT, MUSCLE_CAR_IMAGE_YELLOW,
                     MUSCLE_CAR_WIDTH, SCROLL_SPEED, SEDAN_CAR_HEIGHT,
                     SEDAN_CAR_IMAGE_BROWN, SEDAN_CAR_WIDTH, SPAWN_LOCATIONS,
                     WIDTH, WIN, bg_tiles, lamp_tiles)
 
 
-def get_random_colors() -> list:
+def get_random_colors() -> list[int]:
     """Return RGB list color"""
     return [random.randint(0, 255) for _ in range(3)]
 
@@ -37,7 +39,7 @@ def scroll_lamps(scroll_speed_lamp: int) -> int:
     return scroll_speed_lamp
 
 
-def create_color_cars_dict():
+def create_color_cars_dict() -> dict:
     Car_Colors = {}
     Car_Colors[ColorCar.CAR_GREEN] = [CAR_IMAGE_GREEN, (CAR_WIDTH, CAR_HEIGHT)]
     Car_Colors[ColorCar.CAR_RED] = [CAR_IMAGE_RED, ((CAR_WIDTH, CAR_HEIGHT))]
@@ -47,14 +49,14 @@ def create_color_cars_dict():
     return Car_Colors
 
 
-def create_spawning_locations():
+def create_spawning_locations() -> tuple[Location]:
     loc1 = Location.location(SPAWN_LOCATIONS[0], 1)
     loc2 = Location.location(SPAWN_LOCATIONS[1], 2)
     loc3 = Location.location(SPAWN_LOCATIONS[2], 3)
     return loc1, loc2, loc3
 
 
-def create_boundaries() -> tuple:
+def create_boundaries() -> tuple[pg.Rect]:
     upper = pg.Rect(0, 0, WIDTH, DRIVING_AREA_SIZE[0] + 25)
     lower = pg.Rect(0, DRIVING_AREA_SIZE[1], WIDTH, 100)
     return (upper, lower)
@@ -74,4 +76,19 @@ def create_traffic_car(
     new_car.line = location.line_value
     location.car_occupying = new_car
     return new_car
+
+
+def create_cloud() -> Cloud:
+    scale = random.random()
+    image = random.choice([CLOUD_1_IMAGE, CLOUD_2_IMAGE])
+    speed = random.randint(10, 15)
+    transparency = random.randint(50, 100)
+    # scale = random.randint(10, 20) / 10
+    model = image
+    # model = pg.transform.scale(image, (image.get_width() * scale, image.get_height() * scale))
+    model.set_alpha(transparency)
+    image_width = model.get_width()
+    starting_point = (WIDTH, random.randint(0, HEIGHT - model.get_height()))
+    return Cloud(model, image_width, speed, starting_point)
+    
 

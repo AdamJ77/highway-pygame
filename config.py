@@ -100,7 +100,7 @@ POLICE_CHOPPER_WIDTH = POLICE_CHOPPER_IMAGE.get_width()
 POLICE_CHOPPER_HEIGHT = POLICE_CHOPPER_IMAGE.get_height()
 CHOPPER_STARTING_POINT = WIDTH//4, HEIGHT//2
 
-TURBINE_IMAGE = pg.transform.rotate(pg.image.load("images/turbine.png"), -90)
+TURBINE_IMAGE = pg.transform.rotate(pg.image.load("images/turbine2.png"), -90)
 TURBINE_HEIGHT, TURBINE_WIDTH = TURBINE_IMAGE.get_height(), TURBINE_IMAGE.get_width()
 TURBINE_SPEED = 10
 
@@ -109,3 +109,9 @@ PROBABILITY_OF_SPAWN = 20
 NUM_OF_TRAFFIC = 4
 
 
+# CLOUDS
+CLOUD_DENSITY = 3
+PROBABILITY_OF_SPAWN_CLOUD = 20
+
+CLOUD_1_IMAGE = pg.image.load("images/cloud.png")
+CLOUD_2_IMAGE = pg.image.load("images/cloud2.png")

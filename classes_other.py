@@ -221,11 +221,6 @@ class Chopper:
         return (self.x + self.width / 2 + 15, self.y + self.height / 2 ) 
 
     def rotate_turbine(self):
-        # rotated_image = pg.transform.rotate(self.turbine_model, self.turbine_rotation)
-        # new_rect = rotated_image.get_rect(center=(self.turbine_model.get_rect(topleft=(self.x_turbine, self.y_turbine)).center))
-        # self.turbine_model = rotated_image
-        # self.turbine_rotation += TURBINE_SPEED % 360
-        # self.x_turbine, self.y_turbine = new_rect.topleft
         self.turbine_image = pg.transform.rotate(self.turbine_model, self.turbine_rotation)
         self.turbine_rotation += TURBINE_SPEED % 360  # Value will reapeat after 359. This prevents angle to overflow.
         x, y = self.turbine_rect.center  # Save its current center.
@@ -248,4 +243,37 @@ class Chopper:
     def y(self, new_y):
         self._y = new_y
 
+
+
     
+class Cloud(pg.sprite.Sprite):
+    def __init__(self, model: pg.image, width: int, speed: float, start_position: tuple[int]) -> None:
+        super().__init__()
+        self.model = model
+        self.width = width
+        self.speed = speed
+        self._x = start_position[0]
+        self._y = start_position[1]
+        self.isOut = False
+    
+    
+    @property
+    def x(self):
+        return self._x
+    
+    @x.setter
+    def x(self, new_x):
+        self._x = new_x
+    
+    @property
+    def y(self):
+        return self._y
+
+    @y.setter
+    def y(self, new_y):
+        self._y = new_y
+    
+    def move(self):
+        self.x -= self.speed
+        if self.x + self.width < 0:
+            self.isOut = True
