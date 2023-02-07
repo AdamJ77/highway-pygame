@@ -1,23 +1,12 @@
-import pygame as pg
 import math
-from classes_other import (
-    Car
-)
 
-from config import (
-    WIDTH,
-    HEIGHT,
-    PLAYER_IMAGE,
-    PLAYER_WIDTH,
-    PLAYER_HEIGHT,
-    SPEED_PLAYER,
-    BRAKE_LIGHTS,
-    ACELERATION,
-    SCROLL_SPEED,
-    BRAKE_DECEL,
-    ANGLE_ROTATE,
-    MAX_ANGLE
-)
+import pygame as pg
+
+from classes_other import Car
+from config import (ACELERATION, ANGLE_ROTATE, BRAKE_DECEL, BRAKE_LIGHTS,
+                    HEIGHT, MAX_ANGLE, PLAYER_HEIGHT, PLAYER_IMAGE,
+                    PLAYER_WIDTH, SCROLL_SPEED, SPEED_PLAYER, WIDTH)
+
 
 class Player(Car):
     def __init__(self) -> None:
@@ -68,7 +57,7 @@ class Player(Car):
 
     def no_acceleration(self) -> None:
         """Speed down if no acceleration"""
-        if self.speed > SPEED_PLAYER and (new_x := self.x + self.speed) < WIDTH - PLAYER_WIDTH:
+        if self.speed > SPEED_PLAYER + 1 and (new_x := self.x + self.speed) < WIDTH - PLAYER_WIDTH:
             if self.speed - self.decelaration >= SPEED_PLAYER:
                 self.speed -= self.decelaration
                 self.x = new_x

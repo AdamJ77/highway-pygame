@@ -6,9 +6,10 @@ import numpy as np
 import pygame as pg
 
 from class_player import Player
-from classes_other import Game, Police, Truck
+from classes_other import Chopper, Game, Police, Truck
 from collisions import collisions
-from config import AREA_SURFACE, HIGHWAY_IMAGE_WIDTH, WIN
+from config import (AREA_SURFACE, HIGHWAY_IMAGE_WIDTH, NUM_OF_TRAFFIC,
+                    PROBABILITY_OF_SPAWN, WIN)
 from utils import (create_boundaries, create_color_cars_dict,
                    create_spawning_locations, create_traffic_car,
                    get_random_car, get_random_colors, scroll_background,
@@ -40,6 +41,8 @@ def input_player(
         player.brakes_light = False
     if keys_pressed[pg.K_SPACE]:
         player.constant_speed()
+    if keys_pressed[pg.K_p]:
+        pass
 
 
     if keys_pressed[pg.K_p]:
@@ -80,7 +83,8 @@ def debug(
 def update_screen(
     player: Player,
     traffic_cars: np.array,
-    police: Police
+    police: Police,
+    chopper: Chopper
     ) -> None:
     """
     Updates screen images' positions
@@ -96,6 +100,8 @@ def update_screen(
 
     WIN.blit(player_model, (player.x, player.y))
     WIN.blit(police.model, (police.x, police.y))
+    WIN.blit(chopper.model, (chopper.x, chopper.y))
+    WIN.blit(chopper.turbine_image, chopper.turbine_rect)
     WIN.blit(AREA_SURFACE, (0,0))
     pg.display.update()
     return traffic_cars
@@ -155,6 +161,7 @@ def main(*args, **kwargs):
     player = Player()
     truck1 = Truck()
     police_car = Police()
+    chopper = Chopper()
 
     upper_b, lower_b = create_boundaries()
     locations_objs = create_spawning_locations()
@@ -180,17 +187,20 @@ def main(*args, **kwargs):
             scroll_speed_bg = 0
 
         # UPDATE CARS IMAGES
-        traffic_cars = update_screen(player, traffic_cars, police_car)
+        traffic_cars = update_screen(player, traffic_cars, police_car, chopper)
 
         # CHECK IF PLAYER COLLIDED WITH BOUNDARY OR CAR
         collisions(player, traffic_cars, upper_b, lower_b)
+
+        # CHOPPER TURBINES TEST
+        chopper.rotate_turbine()
 
         # CHECK FOR PLAYER'S INPUT
         input_player(player, police_car)
 
         # TRAFFIC
         move_traffic(traffic_cars)
-        traffic_cars = spawn_traffic(20, 4, Car_Colors, traffic_cars, locations_objs)
+        traffic_cars = spawn_traffic(PROBABILITY_OF_SPAWN, NUM_OF_TRAFFIC, Car_Colors, traffic_cars, locations_objs)
 
         # DEBUG
         debug(player, traffic_cars, police_car, upper_b, lower_b)

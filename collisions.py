@@ -80,9 +80,9 @@ def collisions(
     traffic_cars: np.array,
     upper: pg.Rect,
     lower: pg.Rect
-    ):
+    )-> None:
     is_collision = check_boundaries_collision(player, upper, lower)
-    print(is_collision)
+    # print(is_collision)
     if is_collision:
         boundary = "upper" if is_collision is upper else "lower"
         player.rotate_back(boundary)

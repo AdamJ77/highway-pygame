@@ -1,26 +1,21 @@
-import pygame as pg
-from enum import Enum, auto
 import math
+from enum import Enum, auto
+
+import pygame as pg
+
+from config import (ANGLE_ROTATE, CHOPPER_STARTING_POINT,
+                    FREQUENCY_OF_POLICE_LIGHTS, FRICTION_DECEL,
+                    MAX_ANGLE_TRAFFIC_CHANGE_LINE, MAX_SPEED_PLAYER,
+                    POLICE_CAR_HEIGHT, POLICE_CAR_IMAGE,
+                    POLICE_CAR_IMAGE_LIGHTS_B, POLICE_CAR_IMAGE_LIGHTS_R,
+                    POLICE_CAR_WIDTH, POLICE_CHOPPER_HEIGHT,
+                    POLICE_CHOPPER_IMAGE, POLICE_CHOPPER_WIDTH, SCROLL_SPEED,
+                    SPEED_PLAYER, TIME_OF_TURN, TRUCK_HEIGHT, TRUCK_IMAGE,
+                    TRUCK_WIDTH, TURBINE_HEIGHT, TURBINE_IMAGE, TURBINE_SPEED,
+                    TURBINE_WIDTH)
+
 # from class_player import Player
 
-from config import (
-    SPEED_PLAYER,
-    MAX_SPEED_PLAYER,
-    FRICTION_DECEL,
-    SCROLL_SPEED,
-    TRUCK_IMAGE,
-    TRUCK_HEIGHT,
-    TRUCK_WIDTH,
-    POLICE_CAR_IMAGE,
-    POLICE_CAR_HEIGHT,
-    POLICE_CAR_WIDTH,
-    POLICE_CAR_IMAGE_LIGHTS_B,
-    POLICE_CAR_IMAGE_LIGHTS_R,
-    FREQUENCY_OF_POLICE_LIGHTS,
-    ANGLE_ROTATE,
-    MAX_ANGLE_TRAFFIC_CHANGE_LINE,
-    TIME_OF_TURN
-)
 
 
 class Game:
@@ -202,3 +197,55 @@ class Police(Car):
 
     def automatic_following(other: Car):
         pass
+
+
+class Chopper:
+    def __init__(self) -> None:
+        self._x = CHOPPER_STARTING_POINT[0]
+        self._y = CHOPPER_STARTING_POINT[1]
+        self.model = POLICE_CHOPPER_IMAGE
+        self.height = POLICE_CHOPPER_HEIGHT
+        self.width = POLICE_CHOPPER_WIDTH
+        # self.x_turbine = 100
+        # self.y_turbine = 100
+        self.turbine_model = TURBINE_IMAGE
+        self.turbine_image = self.turbine_model
+        self.turbine_height = TURBINE_HEIGHT
+        self.turbine_width = TURBINE_WIDTH
+        self.turbine_rotation = 0
+        self.turbine_speed = TURBINE_SPEED
+        self.turbine_rect = self.turbine_image.get_rect()
+        self.turbine_rect.center = self.turbine_center_point()
+
+    def turbine_center_point(self) -> tuple[float]:
+        return (self.x + self.width / 2 + 15, self.y + self.height / 2 ) 
+
+    def rotate_turbine(self):
+        # rotated_image = pg.transform.rotate(self.turbine_model, self.turbine_rotation)
+        # new_rect = rotated_image.get_rect(center=(self.turbine_model.get_rect(topleft=(self.x_turbine, self.y_turbine)).center))
+        # self.turbine_model = rotated_image
+        # self.turbine_rotation += TURBINE_SPEED % 360
+        # self.x_turbine, self.y_turbine = new_rect.topleft
+        self.turbine_image = pg.transform.rotate(self.turbine_model, self.turbine_rotation)
+        self.turbine_rotation += TURBINE_SPEED % 360  # Value will reapeat after 359. This prevents angle to overflow.
+        x, y = self.turbine_rect.center  # Save its current center.
+        self.turbine_rect = self.turbine_image.get_rect()  # Replace old rect with new rect.
+        self.turbine_rect.center = (x, y)  # Put the new rect's center at old center.
+
+    @property
+    def x(self):
+        return self._x
+
+    @x.setter
+    def x(self, new_x):
+        self._x = new_x
+    
+    @property
+    def y(self):
+        return self._y
+
+    @y.setter
+    def y(self, new_y):
+        self._y = new_y
+
+    
