@@ -220,6 +220,7 @@ def main(*args, **kwargs):
         # UPDATE CARS IMAGES
         traffic_cars, clouds = update_screen(player, traffic_cars, police_car, chopper, clouds)
 
+        
         # CHECK IF PLAYER COLLIDED WITH BOUNDARY OR CAR
         collisions(player, traffic_cars, upper_b, lower_b, chopper)
 
@@ -227,7 +228,6 @@ def main(*args, **kwargs):
         chopper.rotate_turbine()
 
         # CHOPPER MOVING TEST
-        print(chopper.isMoving, distance((chopper.x, chopper.y), chopper.destination))
         if chopper.isMoving:
             chopper.moveToDestination()
             if chopper.onDestination():

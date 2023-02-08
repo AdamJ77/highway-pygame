@@ -19,7 +19,8 @@ OBSTACLE_1_HEIGHT = 100
 
 
 X, Y = 50, 50
-SPEED = 4
+SPEED = 2
+
 class Obstacle:
     def __init__(self) -> None:
         self.rect = pg.Rect(OBSTACLE_1_INIT_X, OBSTACLE_1_INIT_Y, OBSTACLE_1_WIDTH, OBSTACLE_1_HEIGHT)

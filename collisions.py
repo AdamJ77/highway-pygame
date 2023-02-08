@@ -5,6 +5,8 @@ import pygame as pg
 
 from class_player import Player
 from classes_other import Chopper
+from config import (COLLISION_TOLERANCE, HEIGHT, POLICE_CHOPPER_HEIGHT,
+                    POLICE_CHOPPER_WIDTH, WIDTH)
 
 # PHYSICS COLLISIONs
 
@@ -19,6 +21,7 @@ def check_collision_with_player(
 
 # CHECK TRAFFIC COLLISION
 def check_collision_cars(
+    player: Player,
     player_rect: pg.Rect,
     traffic_cars: np.array
     ) -> bool:
@@ -26,38 +29,40 @@ def check_collision_cars(
     Check if player's rect collided with other car's rect
     """
     # rect_player = player.get_rect()
+
     for car in traffic_cars:
         rect_car = car.get_rect()
         if player_rect.colliderect(rect_car):
-            # check_side_collision(player_rect, rect_car, player)
-            pass
+            check_side_collision(player, player_rect, rect_car)
     return
 
 
 def check_side_collision(
+    player: Player,
     rect_player: pg.Rect,
     rect_car: pg.Rect,
-    player: Player
     ):
     """Check from on which side was collision"""
     # direction = None
-    if rect_player.bottom >= rect_car.top:
+    if abs(rect_player.bottom - rect_car.top) < COLLISION_TOLERANCE:
         print("bottom collision")
 
         # direction = "bottom"
         # constraints.update({"bottom": True})
-    elif rect_player.top <= rect_car.bottom:
+    if abs(rect_player.top - rect_car.bottom) < COLLISION_TOLERANCE:
         print("top collision")
         # direction = "top"
         # constraints.update({"top": True})
-    elif rect_player.right >= rect_car.left:
-        print("right collision")
+    if abs(rect_player.right - rect_car.left) < COLLISION_TOLERANCE + player.speed:
+        print("right collision", player.speed, rect_player.right, rect_car.left)
         # direction = "right"
         # constraints.update({"right": True})
-    elif rect_player.left <= rect_player.right:
+    
+    #TODO fix left collision
+    if abs(rect_player.left - rect_player.right) < COLLISION_TOLERANCE + player.speed:
         # direction = "left"
         print("left collision")
-        # constraints.update({"left": True})
+
     return
 
 
@@ -87,16 +92,23 @@ def collisions(
     chopper: Chopper
     )-> None:
     player_rect = player.get_rect()
+
+    # BOUNDARIES
     if is_collision:= check_boundaries_collision(player_rect, upper, lower):
         boundary = "upper" if is_collision is upper else "lower"
         player.rotate_back(boundary)
-    # check_collision_cars(player, traffic_cars)
 
+    # TRAFFIC
+    check_collision_cars(player, player_rect, traffic_cars)
 
+    # CHOPPER
     if check_collision_with_player(player_rect, chopper.get_chopper_rect()) and not chopper.isMoving:
         chopper.isMoving = True
-        # rand_x = random.randint(1, 2)
-        # rand_y = random.randint(1, 2)
-        rand_x = 1000
-        rand_y = 500
+        rand_x, rand_y = create_chopper_direction()
         chopper.destination = (rand_x, rand_y)
+
+
+def create_chopper_direction() -> tuple[int]:
+    x = random.randint(1, WIDTH - POLICE_CHOPPER_WIDTH)
+    y = random.randint(1, HEIGHT - POLICE_CHOPPER_HEIGHT)
+    return x,y
