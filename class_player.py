@@ -18,15 +18,15 @@ class Player(Car):
         self.height = PLAYER_HEIGHT
         self.brakes_light = False
         self.brake_model = BRAKE_LIGHTS
-        # self.act_rect = self.get_rect()
-
+        # self.speed_x #TODO
+        # self.speed_y #TODO (to use when collision)
 
     def get_rect(self):
         """Create and return Rect object based on self attributes"""
         x_cord = self.x
-        y_cord = self.y
+        y_cord = self.y + 15
         if self.rotation < 0:
-            y_cord = self.y + self.width // 2 * self.get_tan_abs(self.rotation) + 10
+            y_cord = self.y + self.width // 2 * self.get_tan_abs(self.rotation) - 5
         return pg.Rect(x_cord, y_cord, self.width, self.height)
 
 
@@ -47,7 +47,7 @@ class Player(Car):
             self.x += self.speed
             if self.speed < self.max_speed:
                 self.speed += ACELERATION
-            self.move_sideways()
+        self.move_sideways()
 
     def move_sideways(self) -> None:
         """Move sideways if there is rotation != 0"""
@@ -105,12 +105,12 @@ class Player(Car):
         if self.rotation > -MAX_ANGLE:
             self.rotate(negative=1)
 
-    def rotate_back(self, is_collision: pg.Rect) -> None:
-        if is_collision == "upper":
+    def rotate_back(self, is_collision: str) -> None:
+        if is_collision == "upper" or is_collision == "top":
             if self.rotation > 0:
                 self.rotate_right()
             self.y += 1
-        elif is_collision == "lower":
+        elif is_collision == "lower" or is_collision == "bottom":
             if self.rotation < 0:
                 self.rotate_left()
             self.y -= 1

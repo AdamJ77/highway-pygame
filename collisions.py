@@ -43,25 +43,27 @@ def check_side_collision(
     rect_car: pg.Rect,
     ):
     """Check from on which side was collision"""
-    # direction = None
     if abs(rect_player.bottom - rect_car.top) < COLLISION_TOLERANCE:
-        print("bottom collision")
+        print("bottom collision", player.speed)
+        if player.rotation < 0:
+            player.rotation += 10
+        # player.rotate_back("bottom")
 
-        # direction = "bottom"
-        # constraints.update({"bottom": True})
-    if abs(rect_player.top - rect_car.bottom) < COLLISION_TOLERANCE:
-        print("top collision")
-        # direction = "top"
-        # constraints.update({"top": True})
+    if abs(rect_player.top - rect_car.bottom) < COLLISION_TOLERANCE + player.speed * player.get_tan_abs(player.rotation):
+        print("top collision", player.speed)
+        if player.rotation > 0:
+            player.rotation -= 10
+        # player.rotate_back("top")
+
     if abs(rect_player.right - rect_car.left) < COLLISION_TOLERANCE + player.speed:
         print("right collision", player.speed, rect_player.right, rect_car.left)
-        # direction = "right"
-        # constraints.update({"right": True})
+        player.x = rect_car.x - player.width
+        player.speed = 0
     
-    #TODO fix left collision
-    if abs(rect_player.left - rect_player.right) < COLLISION_TOLERANCE + player.speed:
-        # direction = "left"
-        print("left collision")
+    if abs(rect_player.left - rect_car.right) < COLLISION_TOLERANCE + player.speed:
+        player.x = rect_car.right + 10
+        player.speed = 0
+        print("left collision", player.speed)
 
     return
 
@@ -102,7 +104,7 @@ def collisions(
     check_collision_cars(player, player_rect, traffic_cars)
 
     # CHOPPER
-    if check_collision_with_player(player_rect, chopper.get_chopper_rect()) and not chopper.isMoving:
+    if check_collision_with_player(player_rect, chopper.get_rect()) and not chopper.isMoving:
         chopper.isMoving = True
         rand_x, rand_y = create_chopper_direction()
         chopper.destination = (rand_x, rand_y)

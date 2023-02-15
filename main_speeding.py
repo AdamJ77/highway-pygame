@@ -43,11 +43,7 @@ def input_player(
     if keys_pressed[pg.K_SPACE]:
         player.constant_speed()
     if keys_pressed[pg.K_c]:
-        WIN.fill(pg.Color(0,0,0,0))
-    if keys_pressed[pg.K_p]:
-        pass
-
-
+        AREA_SURFACE.fill(pg.Color(0,0,0,0))
     if keys_pressed[pg.K_p]:
         police_car.turn_police_lights_on()
     # else:
@@ -71,7 +67,8 @@ def debug(
         for car in traffic_cars:
             car_rect = car.get_rect()
             pg.draw.rect(AREA_SURFACE, (255,255,255), car_rect, 1)
-        pg.draw.rect(AREA_SURFACE, (255,255,255), rect_player, 1)
+        pg.draw.rect(AREA_SURFACE, (255, 0, 0), rect_player, 2)
+        pg.draw.rect(AREA_SURFACE, (0, 255, 0), pg.Rect(player.x, player.y, player.width, player.height), 1)
         pg.draw.rect(AREA_SURFACE, (127, 127, 127), upper_b, 1 )
         pg.draw.rect(AREA_SURFACE, (127, 127, 127), lower_b, 1 )
 
@@ -81,6 +78,17 @@ def debug(
     # print(police_car.rotation, police_car.x, police_car.y)
     # police_car.change_line()
 
+def show_moving_objects(array: np.array) -> np.array:
+    """
+    Display every object in array. Pop object if outside of screen.
+    """
+    objects_to_pop = []
+    for index, object in enumerate(array):
+        if not object.isOut:
+            WIN.blit(object.model, (object.x, object.y))
+        else:
+            objects_to_pop.append(index)
+    return np.delete(array, objects_to_pop)
 
 # SCREEN UPDATING
 def update_screen(
@@ -91,35 +99,26 @@ def update_screen(
     clouds: np.array
     ) -> None:
     """
-    Updates screen images' positions
+    Updates screen images' positions.
+    Mind the sequence of displaying not to overwrite any object
     """
+
     player_model = player.brake_model if player.brakes_light else player.model
-    cars_to_pop = []
-    for index, car in enumerate(traffic_cars):
-        if not car.isOut:
-            WIN.blit(car.model, (car.x, car.y))
-        else:
-            cars_to_pop.append(index)
-    traffic_cars = np.delete(traffic_cars, cars_to_pop)
+    traffic_cars = show_moving_objects(traffic_cars)
 
     WIN.blit(player_model, (player.x, player.y))
     WIN.blit(police.model, (police.x, police.y))
     WIN.blit(chopper.model, (chopper.x, chopper.y))
     WIN.blit(chopper.turbine_image, chopper.turbine_rect)
 
-    clouds_to_pop = []
-    for i, cloud in enumerate(clouds):
-        if not cloud.isOut:
-            WIN.blit(cloud.model, (cloud.x, cloud.y))
-        else:
-            clouds_to_pop.append(i)
-    clouds = np.delete(clouds, clouds_to_pop)
-
+    clouds = show_moving_objects(clouds)
     WIN.blit(AREA_SURFACE, (0,0))
+
     pg.display.update()
     return traffic_cars, clouds
 
 
+# TRAFFIC
 def check_location(
     spawn_locations: list):
     """
@@ -131,7 +130,7 @@ def check_location(
             return None
     return location
 
-# TRAFFIC
+
 def spawn_traffic(
     prob_of_spawn: int,
     density: int,
@@ -143,6 +142,7 @@ def spawn_traffic(
     """
     if len(traffic_cars) >= density:
         return traffic_cars
+
     chance_of_spawn = random.randint(0, 1000)
     if chance_of_spawn < prob_of_spawn:
         location = check_location(spawn_locations)
@@ -217,9 +217,8 @@ def main(*args, **kwargs):
         if abs(scroll_speed_bg) > HIGHWAY_IMAGE_WIDTH:
             scroll_speed_bg = 0
 
-        # UPDATE CARS IMAGES
+        # DISPLAY OBJECTS ON SCREEN
         traffic_cars, clouds = update_screen(player, traffic_cars, police_car, chopper, clouds)
-
         
         # CHECK IF PLAYER COLLIDED WITH BOUNDARY OR CAR
         collisions(player, traffic_cars, upper_b, lower_b, chopper)
@@ -233,9 +232,10 @@ def main(*args, **kwargs):
             if chopper.onDestination():
                 chopper.isMoving = False
 
-        # CLOUD TESTING
+        # CLOUDS
         clouds = spawn_clouds(PROBABILITY_OF_SPAWN_CLOUD, CLOUD_DENSITY, clouds)
         move_clouds(clouds)
+
         # CHECK FOR PLAYER'S INPUT
         input_player(player, police_car)
 
@@ -250,3 +250,11 @@ def main(*args, **kwargs):
 
 if __name__ == "__main__":
     main()
+
+
+
+#   def __getattr__(self, _attr):
+#         if hasattr(self.env, _attr):
+#             return getattr(self.env, _attr)
+#         else:
+#             raise AttributeError

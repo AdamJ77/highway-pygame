@@ -16,7 +16,7 @@ PLAYER_WIDTH, PLAYER_HEIGHT = PLAYER_IMAGE.get_width(), PLAYER_IMAGE.get_height(
 
 SPEED_PLAYER = 0
 MAX_SPEED_PLAYER = 15
-ACELERATION = 0.3
+ACELERATION = 0.15
 SPEED_CAR_SIDEWAYS = 5
 FRICTION_DECEL = 0.5     # decelaration caused by friction and no acceleration
 BRAKE_DECEL = 10
@@ -80,6 +80,7 @@ POLICE_CAR_IMAGE_LIGHTS_B = pg.transform.rotate(pg.image.load("images/police_car
 POLICE_CAR_WIDTH = POLICE_CAR_IMAGE.get_width()
 POLICE_CAR_HEIGHT = POLICE_CAR_IMAGE.get_height()
 
+POLICE_SPEED = 4
 FREQUENCY_OF_POLICE_LIGHTS = 10
 TIME_OF_TURN = 10
 
@@ -112,3 +113,12 @@ PROBABILITY_OF_SPAWN_CLOUD = 20
 
 CLOUD_1_IMAGE = pg.image.load("images/cloud.png")
 CLOUD_2_IMAGE = pg.image.load("images/cloud2.png")
+
+
+# GUI
+WSAD = pg.image.load("images/key_buttons.jpeg")
+
+
+# MAP ADDITIONALS:
+# 1. VIADUCT
+VIADUCT = pg.image.load("images/viaduct.png")

@@ -1,28 +1,41 @@
 import math
 import random
+from abc import ABC, abstractmethod
 from enum import Enum, auto
 
 import pygame as pg
 
 from config import (ANGLE_ROTATE, CHOPPER_SPEED, CHOPPER_STARTING_POINT,
-                    FREQUENCY_OF_POLICE_LIGHTS, FRICTION_DECEL,
-                    MARGIN_OF_ERROR, MAX_ANGLE_TRAFFIC_CHANGE_LINE,
-                    MAX_SPEED_PLAYER, POLICE_CAR_HEIGHT, POLICE_CAR_IMAGE,
+                    DRIVING_AREA_SIZE, FREQUENCY_OF_POLICE_LIGHTS,
+                    FRICTION_DECEL, MARGIN_OF_ERROR,
+                    MAX_ANGLE_TRAFFIC_CHANGE_LINE, MAX_SPEED_PLAYER,
+                    POLICE_CAR_HEIGHT, POLICE_CAR_IMAGE,
                     POLICE_CAR_IMAGE_LIGHTS_B, POLICE_CAR_IMAGE_LIGHTS_R,
                     POLICE_CAR_WIDTH, POLICE_CHOPPER_HEIGHT,
-                    POLICE_CHOPPER_IMAGE, POLICE_CHOPPER_WIDTH, SCROLL_SPEED,
-                    SPEED_PLAYER, TIME_OF_TURN, TRUCK_HEIGHT, TRUCK_IMAGE,
-                    TRUCK_WIDTH, TURBINE_HEIGHT, TURBINE_IMAGE, TURBINE_SPEED,
-                    TURBINE_WIDTH)
+                    POLICE_CHOPPER_IMAGE, POLICE_CHOPPER_WIDTH, POLICE_SPEED,
+                    SCROLL_SPEED, SPEED_PLAYER, TIME_OF_TURN, TRUCK_HEIGHT,
+                    TRUCK_IMAGE, TRUCK_WIDTH, TURBINE_HEIGHT, TURBINE_IMAGE,
+                    TURBINE_SPEED, TURBINE_WIDTH)
 
 # from class_player import Player
+
+class Vehicle(ABC):
+    def __init__(self) -> None:
+        super().__init__()
+        self._x = None
+    
+
+    @abstractmethod
+    def get_rect(self):
+        """ Returns pygame.Rect object """
+        pass
 
 
 
 class Game:
     test_rect = False
 
-class Car:
+class Car(Vehicle):
 
     speed = SPEED_PLAYER
     max_speed = MAX_SPEED_PLAYER
@@ -116,24 +129,7 @@ class Car:
         self.rotate(negative=1)
 
     def change_line(self):
-        # if self.still_change:
-            if self.time_of_turn < 10:
-                # if self.rotation > -20:
-                self.rotate_right()
-            self.time_of_turn += 1
-            # if self.time_of_turn >= 200:
-            #     if self.rotation != 0:
-            #         self.rotate_left()
-            #     else:
-            #         self.time_of_turn = 1
-            #         self.still_change = False
-        # elif self.time_of_turn < 2 * TIME_OF_TURN and self.rotation != 0:
-        #     self.rotate_left()
-        #     self.move_sideways()
-        #     self.time_of_turn += 1
-        # else:
-        #     self.time_of_turn = 1
-    # or classmethod Truck
+        pass
 
 
 
@@ -156,7 +152,6 @@ class Truck(Car):
 
 
 class Location:
-
     def __init__(self, spawn_loc, line_value) -> None:
         self.spawn_location = spawn_loc
         self.car_occupying = None
@@ -171,11 +166,18 @@ class Location:
 class Police(Car):
     def __init__(self) -> None:
         super().__init__()
-        self.x = 1500
         self.model = POLICE_CAR_IMAGE
         self.width = POLICE_CAR_WIDTH
         self.height = POLICE_CAR_HEIGHT
         self.changing_lights = 1
+    
+    def move_up(self):
+        if self.y - POLICE_SPEED > DRIVING_AREA_SIZE[0]:
+            self.y -= POLICE_SPEED
+    
+    def move_down(self):
+        if self.y + POLICE_SPEED < DRIVING_AREA_SIZE[1]:
+            self.y += POLICE_SPEED
 
     def follow_car(self, car: Car):
         pass
@@ -196,11 +198,7 @@ class Police(Car):
         self.move_sideways()
 
 
-    def automatic_following(other: Car):
-        pass
-
-
-class Chopper:
+class Chopper(Vehicle):
     def __init__(self) -> None:
         self._x = CHOPPER_STARTING_POINT[0]
         self._y = CHOPPER_STARTING_POINT[1]
@@ -219,7 +217,7 @@ class Chopper:
         self.turbine_rect = self.turbine_image.get_rect()
         self.turbine_rect.center = self.turbine_center_point()
     
-    def get_chopper_rect(self):
+    def get_rect(self):
         return pg.Rect(self.x, self.y, self.width, self.height)
 
     def turbine_center_point(self) -> tuple[float]:
