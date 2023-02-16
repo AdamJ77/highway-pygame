@@ -4,8 +4,9 @@ import pygame as pg
 
 from classes_other import Car
 from config import (ACELERATION, ANGLE_ROTATE, BRAKE_DECEL, BRAKE_LIGHTS,
-                    HEIGHT, MAX_ANGLE, PLAYER_HEIGHT, PLAYER_IMAGE,
-                    PLAYER_WIDTH, SCROLL_SPEED, SPEED_PLAYER, WIDTH)
+                    HEIGHT, MAX_ANGLE, MAX_SPEED_PLAYER, PLAYER_HEIGHT,
+                    PLAYER_IMAGE, PLAYER_WIDTH, SCROLL_SPEED, SPEED_PLAYER,
+                    WIDTH)
 
 
 class Player(Car):
@@ -18,16 +19,34 @@ class Player(Car):
         self.height = PLAYER_HEIGHT
         self.brakes_light = False
         self.brake_model = BRAKE_LIGHTS
-        # self.speed_x #TODO
-        # self.speed_y #TODO (to use when collision)
+        self.speed_x = SPEED_PLAYER
+        self.speed_y = 0
 
     def get_rect(self):
         """Create and return Rect object based on self attributes"""
-        x_cord = self.x
-        y_cord = self.y + 15
+        y_cord = self.y
         if self.rotation < 0:
-            y_cord = self.y + self.width // 2 * self.get_tan_abs(self.rotation) - 5
-        return pg.Rect(x_cord, y_cord, self.width, self.height)
+            y_cord = self.y + self.get_height() // 2 * self.get_tan_abs(self.rotation) 
+        return pg.Rect(self.x + PLAYER_WIDTH // 2, y_cord + 5, self.width // 2, self.height - 5)
+    
+    def get_rect_2(self):
+        if self.rotation < 0:
+            rect = pg.Rect(self.x + 15 * self.get_tan_abs(self.rotation), self.y + 15 * self.get_tan_abs(self.rotation), PLAYER_WIDTH // 2, self.get_height() // 2)
+        elif self.rotation > 0:
+            rect = pg.Rect(self.x + 15 * self.get_tan_abs(self.rotation), self.y + self.get_height() // 2, PLAYER_WIDTH // 2, self.get_height() // 2 - 15 * self.get_tan_abs(self.rotation))
+        else:
+            rect = pg.Rect(self.x, self.y + 10, PLAYER_WIDTH // 2, PLAYER_HEIGHT - 10)
+        return rect
+        
+    def get_height(self):
+        return self.model.get_height()
+
+    def get_real_speed(self) -> float:
+        """Return float compound speed (real_speed)"""
+        return math.sqrt(self.speed_x ** 2 + self.speed_y ** 2)
+
+    def set_height(self):
+        self.height = PLAYER_HEIGHT + PLAYER_HEIGHT * self.get_tan_abs(self.rotation)
 
 
     @staticmethod
@@ -40,29 +59,44 @@ class Player(Car):
         """Get tangens value of given angle"""
         tan = math.tan(math.radians(abs(angle)))
         return 1//tan
+    
+    def speed_up(self):
+        if self.get_real_speed() < MAX_SPEED_PLAYER:
+            self.speed_x += ACELERATION
+            self.speed_y = self.speed_x * self.get_tan_abs(self.rotation) 
+
+    def slow_down(self):
+        if self.get_real_speed() < 0:
+            self.speed_x = SPEED_PLAYER
+            self.speed_y = self.speed_x * self.get_tan_abs(self.rotation)
+        # else:
+            # self.speed_x -= 
 
     def move_forward(self) -> None:
         """Move car forward depending on the car's rotation"""
-        if self.x + self.speed < WIDTH - PLAYER_WIDTH:
-            self.x += self.speed
-            if self.speed < self.max_speed:
-                self.speed += ACELERATION
+        if self.x + self.speed_x < WIDTH - PLAYER_WIDTH:
+            self.x += self.speed_x
+            if self.get_real_speed() < MAX_SPEED_PLAYER:
+                self.speed_x += ACELERATION
         self.move_sideways()
 
     def move_sideways(self) -> None:
         """Move sideways if there is rotation != 0"""
         tan_angle = self.get_tan_abs(self.rotation)
-        y_speed = (self.speed + SCROLL_SPEED) * tan_angle
-        self.y += y_speed if self.rotation < 0 else -y_speed
+        # self.get_cot(self.rotation)
+        if self.speed_y * tan_angle < MAX_SPEED_PLAYER:
+            self.speed_y = self.speed_x * tan_angle
+        
+        self.y += self.speed_y if self.rotation < 0 else -self.speed_y
 
     def no_acceleration(self) -> None:
         """Speed down if no acceleration"""
-        if self.speed > SPEED_PLAYER + 1 and (new_x := self.x + self.speed) < WIDTH - PLAYER_WIDTH:
-            if self.speed - self.decelaration >= SPEED_PLAYER:
-                self.speed -= self.decelaration
+        if self.get_real_speed() > SPEED_PLAYER + 1 and (new_x := self.x + self.speed_x) < WIDTH - PLAYER_WIDTH:
+            if self.speed_x - self.decelaration >= SPEED_PLAYER:
+                self.speed_x -= self.decelaration
                 self.x = new_x
         else:
-            self.speed = SPEED_PLAYER
+            self.speed_x = SPEED_PLAYER
             self.free_decelaration()
         self.move_sideways()
 
@@ -72,10 +106,11 @@ class Player(Car):
 
     def brake(self) -> None:
         """Massive speed down"""
-        if (new_speed:=self.speed - self.decelaration * 3) >= SPEED_PLAYER:
+        if (new_speed:=self.get_real_speed() - self.decelaration * 3) >= SPEED_PLAYER:
                 self.speed = new_speed
-                self.x += self.speed
-        elif not self.speed and (new_x:= self.x - BRAKE_DECEL) > 0:
+                self.x += self.speed_x
+                self.y += self.speed_y
+        elif not self.get_real_speed() and (new_x:= self.x - BRAKE_DECEL) > 0:
                 self.x = new_x
         self.move_sideways()
         self.brakes_light = True
@@ -89,7 +124,11 @@ class Player(Car):
         """
         rotated_image = pg.transform.rotate(PLAYER_IMAGE, self.rotation)
         rotated_image_brake = pg.transform.rotate(BRAKE_LIGHTS, self.rotation)
-        new_rect = rotated_image.get_rect(center=(self.model.get_rect(topleft=(self.x, self.y)).center))
+        new_rect = rotated_image.get_rect(center=(self.model.get_rect(topleft=(self.x, self.y)).center)) 
+        # if not negative and self.rotation <=0:
+            # self.y = self.y + 3
+        # elif not negative:
+            # self.y -= 3
         self.model = rotated_image
         self.brake_model = rotated_image_brake
         self.rotation += ANGLE_ROTATE * (-1) ** negative

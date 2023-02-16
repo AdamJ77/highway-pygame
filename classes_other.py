@@ -251,10 +251,7 @@ class Chopper(Vehicle):
         self.y += CHOPPER_SPEED * cos_y(self.destination, (self.x, self.y))
     
     def onDestination(self) -> bool:
-        if distance((self.x, self.y), self.destination) < MARGIN_OF_ERROR:
-            return True
-        else:
-            return False
+        return True if distance((self.x, self.y), self.destination) < MARGIN_OF_ERROR else False
 
 
 def distance(point1, point2) -> float:

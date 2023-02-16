@@ -22,12 +22,17 @@ pg.display.set_caption("Highway ride")
 # PLAYER HANDLING
 def input_player(
     player: Player,
-    police_car: Police
+    police_car: Police,
+    traffic_cars,
+    upper_b, 
+    lower_b,
+    q_key: bool
     ) -> None:
     """
     Handle player's keyboard event
     """
     keys_pressed = pg.key.get_pressed()
+
     if keys_pressed[pg.K_w] and not keys_pressed[pg.K_s]:
         player.move_forward()
     if keys_pressed[pg.K_a]:
@@ -36,47 +41,47 @@ def input_player(
         player.rotate_right()
     if keys_pressed[pg.K_s]:
         player.brake()
+    else:
+        player.brakes_light = False
     if not keys_pressed[pg.K_w] and not keys_pressed[pg.K_SPACE] and not keys_pressed[pg.K_s]:
         player.no_acceleration()
-    if not keys_pressed[pg.K_s]:
-        player.brakes_light = False
     if keys_pressed[pg.K_SPACE]:
         player.constant_speed()
-    if keys_pressed[pg.K_c]:
-        AREA_SURFACE.fill(pg.Color(0,0,0,0))
+    if keys_pressed[pg.K_q]:
+        q_key = False if q_key else True
     if keys_pressed[pg.K_p]:
         police_car.turn_police_lights_on()
-    # else:
-    #     police_car.turn_police_ligths_off()
+    
+    draw_rect(player, traffic_cars, upper_b, lower_b, q_key)
+    return q_key
 
 
-def debug(
+def draw_rect(
     player: Player,
     traffic_cars: np.array,
-    police_car: Police,
     upper_b: pg.Rect,
-    lower_b: pg.Rect
+    lower_b: pg.Rect,
+    q_key: bool
     ) -> None:
     """
-    Check for debug functions :
-    q - draw all cars' rectangles
+    Draw traffic cars & player pg.Rect objects
     """
-    keys_pressed = pg.key.get_pressed()
-    if keys_pressed[pg.K_q]:
-        rect_player = player.get_rect()
-        for car in traffic_cars:
-            car_rect = car.get_rect()
-            pg.draw.rect(AREA_SURFACE, (255,255,255), car_rect, 1)
-        pg.draw.rect(AREA_SURFACE, (255, 0, 0), rect_player, 2)
-        pg.draw.rect(AREA_SURFACE, (0, 255, 0), pg.Rect(player.x, player.y, player.width, player.height), 1)
-        pg.draw.rect(AREA_SURFACE, (127, 127, 127), upper_b, 1 )
-        pg.draw.rect(AREA_SURFACE, (127, 127, 127), lower_b, 1 )
+    if not q_key:
+        AREA_SURFACE.fill(pg.Color(0,0,0,0))
+        return
 
-    # police_car.constant_speed()
-    # police_car.free_decelaration()
-    # police_car.turn_police_lights_on()
-    # print(police_car.rotation, police_car.x, police_car.y)
-    # police_car.change_line()
+    AREA_SURFACE.fill(pg.Color(0,0,0,0))
+    for car in traffic_cars:
+        car_rect = car.get_rect()
+        pg.draw.rect(AREA_SURFACE, (255,255,255), car_rect, 1)
+    
+    rect_player = player.get_rect()
+    rect_player_2 = player.get_rect_2()
+    pg.draw.rect(AREA_SURFACE, (255, 0, 0), rect_player, 2)
+    pg.draw.rect(AREA_SURFACE, (0, 0, 255), rect_player_2, 2)
+    # pg.draw.rect(AREA_SURFACE, (0, 255, 0), pg.Rect(player.x, player.y, player.width, player.height), 1)
+    pg.draw.rect(AREA_SURFACE, (127, 127, 127), upper_b, 1 )
+    pg.draw.rect(AREA_SURFACE, (127, 127, 127), lower_b, 1 )
 
 def show_moving_objects(array: np.array) -> np.array:
     """
@@ -205,6 +210,9 @@ def main(*args, **kwargs):
 
     clouds = np.array([], dtype=object)
 
+    # debug key
+    q_key = False
+
     while run:
         pg.display.flip()
         clock.tick(40)
@@ -220,8 +228,8 @@ def main(*args, **kwargs):
         # DISPLAY OBJECTS ON SCREEN
         traffic_cars, clouds = update_screen(player, traffic_cars, police_car, chopper, clouds)
         
-        # CHECK IF PLAYER COLLIDED WITH BOUNDARY OR CAR
-        collisions(player, traffic_cars, upper_b, lower_b, chopper)
+        # PLAYER'S COLLISIONS
+        # collisions(player, traffic_cars, upper_b, lower_b, chopper)
 
         # CHOPPER TURBINES TEST
         chopper.rotate_turbine()
@@ -236,15 +244,16 @@ def main(*args, **kwargs):
         clouds = spawn_clouds(PROBABILITY_OF_SPAWN_CLOUD, CLOUD_DENSITY, clouds)
         move_clouds(clouds)
 
-        # CHECK FOR PLAYER'S INPUT
-        input_player(player, police_car)
+        # CHECK FOR USER'S INPUT
+        q_key = input_player(player, police_car, traffic_cars, upper_b, lower_b, q_key)
 
         # TRAFFIC
         move_traffic(traffic_cars)
         traffic_cars = spawn_traffic(PROBABILITY_OF_SPAWN, NUM_OF_TRAFFIC, Car_Colors, traffic_cars, locations_objs)
+        
+        print(f"X speed={player.speed_x:.2f},\t Y speed=, {player.speed_y:.2f}, \t REAL speed={player.get_real_speed():.2f} ,\t TAN value= {player.get_tan_abs(player.rotation):.2f}")
+        print(player.y, player.get_height())
 
-        # DEBUG
-        debug(player, traffic_cars, police_car, upper_b, lower_b)
     pg.quit()
 
 

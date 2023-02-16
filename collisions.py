@@ -45,15 +45,16 @@ def check_side_collision(
     """Check from on which side was collision"""
     if abs(rect_player.bottom - rect_car.top) < COLLISION_TOLERANCE:
         print("bottom collision", player.speed)
-        if player.rotation < 0:
-            player.rotation += 10
+        # if player.rotation < 0:
+            # player.rotation += 10
+        player.y = rect_car.top - player.height
         # player.rotate_back("bottom")
 
     if abs(rect_player.top - rect_car.bottom) < COLLISION_TOLERANCE + player.speed * player.get_tan_abs(player.rotation):
         print("top collision", player.speed)
-        if player.rotation > 0:
-            player.rotation -= 10
-        # player.rotate_back("top")
+        # if player.rotation > 0:
+            # player.rotation -= 10
+        player.rotate_back("top")
 
     if abs(rect_player.right - rect_car.left) < COLLISION_TOLERANCE + player.speed:
         print("right collision", player.speed, rect_player.right, rect_car.left)
