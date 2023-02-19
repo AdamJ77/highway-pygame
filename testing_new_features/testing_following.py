@@ -3,7 +3,9 @@ import math
 import numpy as np
 import pygame as pg
 
-WIDTH, HEIGHT = 1900, 1000
+from environment import VelocityGUI
+
+WIDTH, HEIGHT = 1900, 1080
 WIN = pg.display.set_mode((WIDTH, HEIGHT))  # maybe add pg.FULLSCREEN ?
 AREA_SURFACE = pg.Surface((WIDTH, HEIGHT))
 empty = pg.Color(0,0,0,0)
@@ -101,6 +103,7 @@ def main(*args, **kwargs):
     player = Followed()
     enemy = Follower()
     obstacle_1 = Obstacle()
+    velocity_gui = VelocityGUI(WIN, 10)
     pg.draw.rect(AREA_SURFACE, (40, 255, 0), obstacle_1.rect, 4)
 
     while run:
@@ -150,7 +153,9 @@ def main(*args, **kwargs):
             else:
                 enemy.follow(player)
 
+
         WIN.blit(AREA_SURFACE, (0,0))
+        velocity_gui.display_velocity(10.0)
 
 
   

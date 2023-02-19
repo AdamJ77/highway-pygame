@@ -1,4 +1,5 @@
 
+import math
 import random
 from typing import Optional, Union
 
@@ -11,6 +12,7 @@ from collisions import collisions
 from config import (AREA_SURFACE, CLOUD_DENSITY, HIGHWAY_IMAGE_WIDTH,
                     NUM_OF_TRAFFIC, PROBABILITY_OF_SPAWN,
                     PROBABILITY_OF_SPAWN_CLOUD, WIN)
+from environment import GUI, Environment, VelocityGUI
 from utils import (create_boundaries, create_cloud, create_color_cars_dict,
                    create_spawning_locations, create_traffic_car,
                    get_random_car, get_random_colors, scroll_background,
@@ -36,7 +38,7 @@ def input_player(
     if keys_pressed[pg.K_w] and not keys_pressed[pg.K_s]:
         player.move_forward()
     if keys_pressed[pg.K_a]:
-       player.rotate_left()
+        player.rotate_left()
     if keys_pressed[pg.K_d]:
         player.rotate_right()
     if keys_pressed[pg.K_s]:
@@ -51,7 +53,11 @@ def input_player(
         q_key = False if q_key else True
     if keys_pressed[pg.K_p]:
         police_car.turn_police_lights_on()
-    
+    if not keys_pressed[pg.K_a] and not keys_pressed[pg.K_d]:
+        if player.rotation < 0:
+            player.rotate_left()
+        elif player.rotation > 0:
+            player.rotate_right()    
     draw_rect(player, traffic_cars, upper_b, lower_b, q_key)
     return q_key
 
@@ -64,7 +70,7 @@ def draw_rect(
     q_key: bool
     ) -> None:
     """
-    Draw traffic cars & player pg.Rect objects
+    Draw pg.Rect objects of traffic cars & player
     """
     if not q_key:
         AREA_SURFACE.fill(pg.Color(0,0,0,0))
@@ -79,9 +85,9 @@ def draw_rect(
     rect_player_2 = player.get_rect_2()
     pg.draw.rect(AREA_SURFACE, (255, 0, 0), rect_player, 2)
     pg.draw.rect(AREA_SURFACE, (0, 0, 255), rect_player_2, 2)
-    # pg.draw.rect(AREA_SURFACE, (0, 255, 0), pg.Rect(player.x, player.y, player.width, player.height), 1)
     pg.draw.rect(AREA_SURFACE, (127, 127, 127), upper_b, 1 )
     pg.draw.rect(AREA_SURFACE, (127, 127, 127), lower_b, 1 )
+
 
 def show_moving_objects(array: np.array) -> np.array:
     """
@@ -94,6 +100,7 @@ def show_moving_objects(array: np.array) -> np.array:
         else:
             objects_to_pop.append(index)
     return np.delete(array, objects_to_pop)
+
 
 # SCREEN UPDATING
 def update_screen(
@@ -191,6 +198,8 @@ def main(*args, **kwargs):
     clock = pg.time.Clock()
     run = True
 
+    velocity_gui = VelocityGUI(WIN, 10)
+
     #TODO game not definied yet
     game1 = Game()
     player = Player()
@@ -205,6 +214,8 @@ def main(*args, **kwargs):
     scroll_speed_bg = 0
     scroll_speed_lamp = 0
 
+
+ 
     traffic_cars = np.array([], dtype=object)
     traffic_cars = np.append(traffic_cars, truck1)
 
@@ -229,7 +240,7 @@ def main(*args, **kwargs):
         traffic_cars, clouds = update_screen(player, traffic_cars, police_car, chopper, clouds)
         
         # PLAYER'S COLLISIONS
-        # collisions(player, traffic_cars, upper_b, lower_b, chopper)
+        collisions(player, traffic_cars, upper_b, lower_b, chopper)
 
         # CHOPPER TURBINES TEST
         chopper.rotate_turbine()
@@ -251,14 +262,20 @@ def main(*args, **kwargs):
         move_traffic(traffic_cars)
         traffic_cars = spawn_traffic(PROBABILITY_OF_SPAWN, NUM_OF_TRAFFIC, Car_Colors, traffic_cars, locations_objs)
         
-        print(f"X speed={player.speed_x:.2f},\t Y speed=, {player.speed_y:.2f}, \t REAL speed={player.get_real_speed():.2f} ,\t TAN value= {player.get_tan_abs(player.rotation):.2f}")
-        print(player.y, player.get_height())
-
+        # speed_y = player.speed * player.get_tan_abs(player.rotation)
+        velocity_gui.display_velocity(player.speed * 3 + 50)
+        # print(f"X speed={player.speed:.2f},\t Y speed=, {speed_y:.2f}, \t REAL speed={math.sqrt(player.speed ** 2 + speed_y ** 2):.2f} ,\t TAN value= {player.get_tan_abs(player.rotation):.2f}")
+        # print(player.y, player.get_height())
+        # print(pg.font.get_fonts())
     pg.quit()
 
 
 if __name__ == "__main__":
     main()
+    # pg.init()
+    # pg.font.init()
+    # gui = GUI(WIN)
+    # gui.velocity(10.2)
 
 
 

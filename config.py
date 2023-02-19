@@ -14,7 +14,7 @@ AREA_SURFACE = pg.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
 PLAYER_IMAGE = pg.transform.rotate(pg.image.load("images/player_car_new.png"), -90)
 PLAYER_WIDTH, PLAYER_HEIGHT = PLAYER_IMAGE.get_width(), PLAYER_IMAGE.get_height()
 
-SPEED_PLAYER = 5
+SPEED_PLAYER = 0
 MAX_SPEED_PLAYER = 15
 ACELERATION = 0.15
 SPEED_CAR_SIDEWAYS = 5
