@@ -3,3 +3,4 @@ __pycache__/
 images/.DS_Store
 gimp_images/
 raleway/
+.idea

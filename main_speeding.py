@@ -1,7 +1,6 @@
-
 import math
 import random
-from typing import Optional, Union
+from typing import Optional, Union, Tuple, Any
 
 import numpy as np
 import pygame as pg
@@ -23,13 +22,13 @@ pg.display.set_caption("Highway ride")
 
 # PLAYER HANDLING
 def input_player(
-    player: Player,
-    police_car: Police,
-    traffic_cars,
-    upper_b, 
-    lower_b,
-    q_key: bool
-    ) -> None:
+        player: Player,
+        police_car: Police,
+        traffic_cars,
+        upper_b,
+        lower_b,
+        q_key: bool
+) -> bool:
     """
     Handle player's keyboard event
     """
@@ -57,36 +56,36 @@ def input_player(
         if player.rotation < 0:
             player.rotate_left()
         elif player.rotation > 0:
-            player.rotate_right()    
+            player.rotate_right()
     draw_rect(player, traffic_cars, upper_b, lower_b, q_key)
     return q_key
 
 
 def draw_rect(
-    player: Player,
-    traffic_cars: np.array,
-    upper_b: pg.Rect,
-    lower_b: pg.Rect,
-    q_key: bool
-    ) -> None:
+        player: Player,
+        traffic_cars: np.array,
+        upper_b: pg.Rect,
+        lower_b: pg.Rect,
+        q_key: bool
+) -> None:
     """
     Draw pg.Rect objects of traffic cars & player
     """
     if not q_key:
-        AREA_SURFACE.fill(pg.Color(0,0,0,0))
+        AREA_SURFACE.fill(pg.Color(0, 0, 0, 0))
         return
 
-    AREA_SURFACE.fill(pg.Color(0,0,0,0))
+    AREA_SURFACE.fill(pg.Color(0, 0, 0, 0))
     for car in traffic_cars:
         car_rect = car.get_rect()
-        pg.draw.rect(AREA_SURFACE, (255,255,255), car_rect, 1)
-    
+        pg.draw.rect(AREA_SURFACE, (255, 255, 255), car_rect, 1)
+
     rect_player = player.get_rect()
     rect_player_2 = player.get_rect_2()
     pg.draw.rect(AREA_SURFACE, (255, 0, 0), rect_player, 2)
     pg.draw.rect(AREA_SURFACE, (0, 0, 255), rect_player_2, 2)
-    pg.draw.rect(AREA_SURFACE, (127, 127, 127), upper_b, 1 )
-    pg.draw.rect(AREA_SURFACE, (127, 127, 127), lower_b, 1 )
+    pg.draw.rect(AREA_SURFACE, (127, 127, 127), upper_b, 1)
+    pg.draw.rect(AREA_SURFACE, (127, 127, 127), lower_b, 1)
 
 
 def show_moving_objects(array: np.array) -> np.array:
@@ -104,12 +103,12 @@ def show_moving_objects(array: np.array) -> np.array:
 
 # SCREEN UPDATING
 def update_screen(
-    player: Player,
-    traffic_cars: np.array,
-    police: Police,
-    chopper: Chopper,
-    clouds: np.array
-    ) -> None:
+        player: Player,
+        traffic_cars: np.array,
+        police: Police,
+        chopper: Chopper,
+        clouds: np.array
+) -> tuple[Any, Any]:
     """
     Updates screen images' positions.
     Mind the sequence of displaying not to overwrite any object
@@ -124,7 +123,7 @@ def update_screen(
     WIN.blit(chopper.turbine_image, chopper.turbine_rect)
 
     clouds = show_moving_objects(clouds)
-    WIN.blit(AREA_SURFACE, (0,0))
+    WIN.blit(AREA_SURFACE, (0, 0))
 
     pg.display.update()
     return traffic_cars, clouds
@@ -132,23 +131,23 @@ def update_screen(
 
 # TRAFFIC
 def check_location(
-    spawn_locations: list):
+        spawn_locations: list):
     """
     Check if randomly chosen location is still occupied by prev spawned car
     """
     location = random.choice(spawn_locations)
-    if prev_car:= location.car_occupying:
+    if prev_car := location.car_occupying:
         if prev_car.x + prev_car.width + 10 >= location.spawn_location[0]:
             return None
     return location
 
 
 def spawn_traffic(
-    prob_of_spawn: int,
-    density: int,
-    car_colors: dict,
-    traffic_cars: np.array,
-    spawn_locations: list) -> np.ndarray:
+        prob_of_spawn: int,
+        density: int,
+        car_colors: dict,
+        traffic_cars: np.array,
+        spawn_locations: list) -> np.ndarray:
     """
     Density parameter is max num of cars created
     """
@@ -167,9 +166,9 @@ def spawn_traffic(
 
 
 def spawn_clouds(
-    prob_of_spawn: int,
-    density: int,
-    clouds: np.ndarray[Cloud]) -> np.ndarray:
+        prob_of_spawn: int,
+        density: int,
+        clouds: np.ndarray[Cloud]) -> np.ndarray:
     """
     Spawn clouds
     """
@@ -200,7 +199,7 @@ def main(*args, **kwargs):
 
     velocity_gui = VelocityGUI(WIN, 10)
 
-    #TODO game not definied yet
+    # TODO game not defined yet
     game1 = Game()
     player = Player()
     truck1 = Truck()
@@ -209,13 +208,11 @@ def main(*args, **kwargs):
 
     upper_b, lower_b = create_boundaries()
     locations_objs = create_spawning_locations()
-    Car_Colors = create_color_cars_dict()
+    car_colors = create_color_cars_dict()
 
     scroll_speed_bg = 0
     scroll_speed_lamp = 0
 
-
- 
     traffic_cars = np.array([], dtype=object)
     traffic_cars = np.append(traffic_cars, truck1)
 
@@ -238,7 +235,7 @@ def main(*args, **kwargs):
 
         # DISPLAY OBJECTS ON SCREEN
         traffic_cars, clouds = update_screen(player, traffic_cars, police_car, chopper, clouds)
-        
+
         # PLAYER'S COLLISIONS
         collisions(player, traffic_cars, upper_b, lower_b, chopper)
 
@@ -260,11 +257,12 @@ def main(*args, **kwargs):
 
         # TRAFFIC
         move_traffic(traffic_cars)
-        traffic_cars = spawn_traffic(PROBABILITY_OF_SPAWN, NUM_OF_TRAFFIC, Car_Colors, traffic_cars, locations_objs)
-        
+        traffic_cars = spawn_traffic(PROBABILITY_OF_SPAWN, NUM_OF_TRAFFIC, car_colors, traffic_cars, locations_objs)
+
         # speed_y = player.speed * player.get_tan_abs(player.rotation)
-        velocity_gui.display_velocity(player.speed * 3 + 50)
-        # print(f"X speed={player.speed:.2f},\t Y speed=, {speed_y:.2f}, \t REAL speed={math.sqrt(player.speed ** 2 + speed_y ** 2):.2f} ,\t TAN value= {player.get_tan_abs(player.rotation):.2f}")
+        velocity_gui.display_velocity(player.speed_x * 3 + 50)
+        print(
+            f"X speed={player.speed_x:.2f},\t Y speed=, {player.speed_y:.2f}, \t REAL speed={math.sqrt(player.speed_x ** 2 + player.speed_y ** 2):.2f} ,\t TAN value= {player.get_tan_abs(player.rotation):.2f}")
         # print(player.y, player.get_height())
         # print(pg.font.get_fonts())
     pg.quit()
@@ -276,8 +274,6 @@ if __name__ == "__main__":
     # pg.font.init()
     # gui = GUI(WIN)
     # gui.velocity(10.2)
-
-
 
 #   def __getattr__(self, _attr):
 #         if hasattr(self.env, _attr):

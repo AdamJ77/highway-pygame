@@ -92,6 +92,10 @@ class Car(Vehicle):
             self.isOut = True
         self.x -= self.decelaration * 6
         self.move_sideways()
+    
+    @staticmethod
+    def get_sin(angle) -> float:
+        return math.sin(math.radians(angle))
 
     @staticmethod
     def get_tan_abs(angle) -> float:
@@ -145,6 +149,8 @@ class ColorCar(Enum):
 class Truck(Car):
     def __init__(self) -> None:
         super().__init__()
+        self._x = 600
+        self._y = 250
         self.model = TRUCK_IMAGE
         self.width = TRUCK_WIDTH
         self.height = TRUCK_HEIGHT
@@ -166,6 +172,8 @@ class Location:
 class Police(Car):
     def __init__(self) -> None:
         super().__init__()
+        self._x: float = 800
+        self._y : float= 760
         self.model = POLICE_CAR_IMAGE
         self.width = POLICE_CAR_WIDTH
         self.height = POLICE_CAR_HEIGHT

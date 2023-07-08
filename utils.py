@@ -1,7 +1,10 @@
 import random
+from typing import Tuple
 
 import numpy as np
 import pygame as pg
+from pygame import Rect
+from pygame.rect import RectType
 
 from classes_other import Car, Cloud, ColorCar, Location
 from config import (CAR_HEIGHT, CAR_IMAGE_GREEN, CAR_IMAGE_PURPLE,
@@ -56,7 +59,7 @@ def create_spawning_locations() -> tuple[Location]:
     return loc1, loc2, loc3
 
 
-def create_boundaries() -> tuple[pg.Rect]:
+def create_boundaries() -> tuple[Rect | RectType, Rect | RectType]:
     upper = pg.Rect(0, 0, WIDTH, DRIVING_AREA_SIZE[0] + 25)
     lower = pg.Rect(0, DRIVING_AREA_SIZE[1] - 35, WIDTH, 100)
     return (upper, lower)

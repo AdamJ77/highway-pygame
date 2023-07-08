@@ -3,7 +3,7 @@ import math
 import pygame as pg
 
 # GAME
-WIDTH, HEIGHT = 1900, 1080
+WIDTH, HEIGHT = 1728, 1080
 WIN = pg.display.set_mode((WIDTH, HEIGHT))  # maybe add pg.FULLSCREEN ?
 DRIVING_AREA_SIZE = (HEIGHT//5 - 50, HEIGHT - 160)
 
@@ -18,7 +18,7 @@ SPEED_PLAYER = 0
 MAX_SPEED_PLAYER = 15
 ACELERATION = 0.15
 SPEED_CAR_SIDEWAYS = 5
-FRICTION_DECEL = 0.5     # decelaration caused by friction and no acceleration
+FRICTION_DECEL = 0.33     # deceleration caused by friction and no acceleration
 BRAKE_DECEL = 10
 
 ANGLE_ROTATE = 2
